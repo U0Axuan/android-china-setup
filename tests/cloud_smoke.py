@@ -162,10 +162,13 @@ try:
     record("Proxy disabled by default","proxyEnabled" not in pref() or
            'proxyEnabled" value="false' in pref())
     proxy_label=find("自定义代理")
-    b=bounds(proxy_label)
-    screen_width=int(re.findall(r"\d+",adb("shell","wm","size").stdout)[0])
-    adb("shell","input","tap",str(screen_width-65),str((b[1]+b[3])//2))
-    time.sleep(1.2)
+    row_y=(bounds(proxy_label)[1]+bounds(proxy_label)[3])//2
+    root=dump("settings_before_switch")
+    toggles=[n for n in root.iter("node") if n.attrib.get("checkable")=="true"
+             and n.attrib.get("clickable")=="true"]
+    record("Compose proxy toggle found",bool(toggles))
+    control=min(toggles,key=lambda n:abs((bounds(n)[1]+bounds(n)[3])//2-row_y))
+    tap(control)
     record("Proxy host editable",bool(nodes(dump("settings_proxy"),"代理主机/IP")))
     click("SOCKS5")
     record("SOCKS5 selection saved","SOCKS5" in pref())

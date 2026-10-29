@@ -164,7 +164,7 @@ class MainActivity : ComponentActivity() {
             downloadedFile = null
             updateFile = false
             status = "获取 " + label + " 最新版本…"
-            tab = AppTab.APPS
+            tab = if (updating) AppTab.ABOUT else AppTab.APPS
             val net = options()
             val sources = selection()
             Thread {
@@ -222,12 +222,13 @@ class MainActivity : ComponentActivity() {
                         return@Thread
                     }
                     runOnUiThread { speedStatus = "正在测速，请查看下方结果…" }
+                    var availableCount = 0
                     benchmarker.test(asset, net, sources) { result ->
+                        if (result.latencyMs != null) availableCount++
                         runOnUiThread { probeResults = probeResults + (result.id to result) }
                     }
                     runOnUiThread {
-                        val available = probeResults.values.count { it.latencyMs != null }
-                        speedStatus = "测速完成。可用 " + available + " 个节点；速率为短时采样估算"
+                        speedStatus = "测速完成。可用 " + availableCount + " 个节点；速率为短时采样估算"
                         speedTesting = false
                     }
                 } catch (e: Exception) {
@@ -341,7 +342,19 @@ class MainActivity : ComponentActivity() {
                         updateInfo?.takeIf { SelfUpdater.isNewer(it.version, version) },
                         ::checkUpdates,
                         { startDownload(SelfUpdater.REPOSITORY, "Android China Setup", updating = true) },
-                        { openWebsite(it) }
+                        { openWebsite(it) }, status, active, progress,
+                        downloadedFile?.takeIf { updateFile },
+                        {
+                            val file = downloadedFile
+                            if (file != null) {
+                                runCatching {
+                                    if (!packageManager.canRequestPackageInstalls()) {
+                                        downloader.openInstallSettings()
+                                        status = "请允许此应用安装更新，然后返回点击安装"
+                                    } else downloader.requestInstall(file)
+                                }.onFailure { status = "无法启动更新安装器：" + it.message }
+                            }
+                        }
                     )
                 }
             }
@@ -643,7 +656,12 @@ private fun AboutScreen(
     available: UpdateInfo?,
     check: () -> Unit,
     download: () -> Unit,
-    openUrl: (String) -> Unit
+    openUrl: (String) -> Unit,
+    downloadStatus: String,
+    downloading: Boolean,
+    downloadProgress: Int,
+    updateReady: File?,
+    installUpdate: () -> Unit
 ) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())
         .padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally,
@@ -669,8 +687,22 @@ private fun AboutScreen(
                 }
                 if (available != null) {
                     Text("新版：" + available.version + " · 下载后需系统确认安装")
-                    Button(onClick = download, modifier = Modifier.fillMaxWidth()) {
-                        Text("下载并安装更新")
+                    Button(onClick = download, enabled = !downloading,
+                        modifier = Modifier.fillMaxWidth()) {
+                        Text(if (downloading) "正在获取更新…" else "下载并安装更新")
+                    }
+                    if (downloading || updateReady != null || downloadStatus.contains("签名与当前")) {
+                        Text(downloadStatus, style = MaterialTheme.typography.bodySmall)
+                    }
+                    if (downloading) {
+                        LinearProgressIndicator(
+                            progress = { downloadProgress / 100f },
+                            modifier = Modifier.fillMaxWidth())
+                    }
+                    if (updateReady != null && !downloading) {
+                        Button(onClick = installUpdate, modifier = Modifier.fillMaxWidth()) {
+                            Text("安装已验证的更新（系统确认）")
+                        }
                     }
                 }
                 Text("启动时自动检查。升级必须使用与已安装包一致的签名；测试版采用临时 Debug 签名，不能保证跨构建覆盖安装。",
