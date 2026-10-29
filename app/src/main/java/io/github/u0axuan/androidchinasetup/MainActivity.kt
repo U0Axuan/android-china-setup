@@ -252,6 +252,8 @@ class MainActivity : ComponentActivity() {
                         updateInfo = latest
                         updateStatus = if (SelfUpdater.isNewer(latest.version, version))
                             "发现新版本 " + latest.version
+                        else if (version.contains("-dev"))
+                            "当前为开发版 " + version + "；最新公开版 " + latest.version
                         else "已是最新版本（" + version + "）"
                         checkingUpdate = false
                     }

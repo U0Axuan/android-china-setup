@@ -15,6 +15,8 @@
 
 ## 🎨 V0.4 界面与功能改进（开发版，尚未发布）
 
+[查看 Android 11/15 云端测试与性能报告](docs/V0.4_UI_TEST_REPORT.md)
+
 ![Android China Setup 极简 Logo](assets/logo.svg)
 
 - **流畅滚动**：从原本单页混合设置与应用的布局改为四个独立页面；应用和加速源均由带稳定 key 的 LazyColumn 逐项渲染。下载进度只在百分比变化时刷新。真机上的掉帧改善仍需性能实测。
