@@ -1,5 +1,16 @@
 # Android China Setup
 
+[![GitHub 最新版本](https://img.shields.io/github/v/release/U0Axuan/android-china-setup?label=GitHub%20Release)](https://github.com/U0Axuan/android-china-setup/releases/latest)
+[![下载最新 APK](https://img.shields.io/badge/%E4%B8%8B%E8%BD%BD-%E6%9C%80%E6%96%B0APK-blue)](https://github.com/U0Axuan/android-china-setup/releases/latest/download/Android-China-Setup.apk)
+
+## 📥 下载最新版本
+
+**[⬇️ 下载最新版 Android APK（动态直链）](https://github.com/U0Axuan/android-china-setup/releases/latest/download/Android-China-Setup.apk)**
+
+**[查看最新版本发布说明](https://github.com/U0Axuan/android-china-setup/releases/latest)** · [查看所有历史版本](https://github.com/U0Axuan/android-china-setup/releases)
+
+> 下载链接自动指向 GitHub 最新正式 Release 的同名 `Android-China-Setup.apk` 附件，后续发布新版本时无须修改 README。首版为 **v0.3.0 公开测试版**，最低 Android 11；目前使用 Debug 测试签名，后续发布签名如有变化可能需卸载后重装。中国大陆网络访问 GitHub 受限时可进入发布页面手动选择下载方式。
+
 手机端独立运行的 Android 中国大陆环境初始化与应用部署工具。
 
 ## 设计目标
