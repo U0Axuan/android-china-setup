@@ -65,6 +65,17 @@ def tap_text(text, label):
         raise AssertionError("UI item not visible: " + text)
     tap(found[0])
 
+def tap_source_radio(label):
+    target, tree = scroll_to(label)
+    center_y = (bounds(target)[1] + bounds(target)[3]) // 2
+    radios = [node for node in tree.iter("node")
+              if node.attrib.get("class") == "android.widget.RadioButton"]
+    assert radios, "No radio buttons in source panel"
+    radio = min(radios, key=lambda n: abs((bounds(n)[1] + bounds(n)[3]) // 2 - center_y))
+    tap(radio)
+    time.sleep(1)
+    return pref()
+
 def scroll_to(text):
     # Search toward the bottom, then upward again; both mirror editor and
     # the catalog are in one vertically scrolling LazyColumn.
@@ -118,9 +129,8 @@ try:
         record("preset_source_" + source, True)
 
     # A user can explicitly choose a preset source.
-    gh, _ = scroll_to("GHFast")
-    tap(gh, x_override=65)
-    check('ghfast' in pref(), "preset_source_selection_persisted")
+    saved = tap_source_radio("GHFast")
+    check('ghfast' in saved, "preset_source_selection_persisted", saved[:800])
     screenshot("04_preset_selected")
 
     # The reference catalogue is discoverable directly inside the app.
@@ -145,9 +155,8 @@ try:
 
     # Select official source before the live download; test of mirror network
     # transit/fallback requires a controlled mirror and is not implied here.
-    official, _ = scroll_to("GitHub 官方直连")
-    tap(official, x_override=65)
-    check('official' in pref(), "official_source_selection_persisted")
+    saved = tap_source_radio("GitHub 官方直连")
+    check('official' in saved, "official_source_selection_persisted", saved[:800])
     close, _ = scroll_to("收起下载源设置")
     tap(close)
 
