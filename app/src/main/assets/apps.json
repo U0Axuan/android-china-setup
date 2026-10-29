@@ -3,79 +3,76 @@
     "name": "曦码输入法",
     "category": "输入法",
     "selected": true,
-    "notice": "默认输入法候选；需用户手动启用",
+    "notice": "默认输入法需手动启用",
     "homepage": "https://ime.ximei.me/",
-    "installMode": "manual"
+    "repository": "ximeiorg/Xime"
   },
   {
     "name": "Via 浏览器",
     "category": "浏览器",
     "selected": true,
-    "homepage": "https://viayoo.com/",
-    "installMode": "manual"
+    "homepage": "https://viayoo.com/"
   },
   {
     "name": "BiliPai",
     "category": "影视",
     "selected": false,
     "homepage": "https://github.com/jay3-yy/BiliPai",
-    "installMode": "manual"
+    "repository": "jay3-yy/BiliPai"
   },
   {
     "name": "FlClash",
     "category": "网络",
     "selected": false,
     "homepage": "https://github.com/vien97/flclash",
-    "installMode": "manual"
+    "repository": "vien97/flclash"
   },
   {
     "name": "Shizuku",
     "category": "系统",
     "selected": false,
     "homepage": "https://github.com/RikkaApps/Shizuku",
-    "installMode": "manual"
+    "repository": "RikkaApps/Shizuku"
   },
   {
     "name": "GhostLock",
     "category": "高级系统工具",
     "selected": false,
-    "notice": "高风险；不得自动运行",
-    "homepage": "https://github.com/YuKongA/ghostlock-app",
-    "installMode": "manual"
+    "notice": "高风险；仅展示项目官网",
+    "homepage": "https://github.com/YuKongA/ghostlock-app"
   },
   {
     "name": "知乎++",
     "category": "资讯",
     "selected": false,
     "homepage": "https://github.com/zhihu-plus/android",
-    "installMode": "manual"
+    "repository": "zhihu-plus/android"
   },
   {
     "name": "Obtainium",
     "category": "应用管理",
     "selected": true,
     "homepage": "https://github.com/ImranR98/Obtainium",
-    "installMode": "manual"
+    "repository": "ImranR98/Obtainium"
   },
   {
     "name": "F-Droid",
     "category": "应用商店",
     "selected": false,
-    "homepage": "https://f-droid.org/",
-    "installMode": "manual"
+    "homepage": "https://f-droid.org/"
   },
   {
     "name": "Material Files",
     "category": "文件管理",
     "selected": true,
     "homepage": "https://github.com/zhanghai/MaterialFiles",
-    "installMode": "manual"
+    "repository": "zhanghai/MaterialFiles"
   },
   {
     "name": "LocalSend",
     "category": "文件传输",
     "selected": false,
     "homepage": "https://localsend.org/",
-    "installMode": "manual"
+    "repository": "localsend/localsend"
   }
 ]
