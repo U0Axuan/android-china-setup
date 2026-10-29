@@ -108,9 +108,20 @@ try:
     check("Success" in install.stdout, "install_debug_apk", install.stdout.strip())
     adb("logcat", "-c")
     start = adb("shell", "am", "start", "-n", PACKAGE + "/.MainActivity")
-    time.sleep(7)
+    time.sleep(5)
+    root = None
+    for attempt in range(6):
+        root = dump("01_start_attempt_%d" % attempt)
+        if matches(root, "Android China Setup"):
+            break
+        # API 35 boot can briefly show a Pixel Launcher ANR dialog.
+        if matches(root, "Wait"):
+            tap(matches(root, "Wait")[0])
+        elif matches(root, "isn't responding"):
+            adb("shell", "input", "keyevent", "4")
+        adb("shell", "am", "start", "-n", PACKAGE + "/.MainActivity")
+        time.sleep(3)
     screenshot("01_initial")
-    root = dump("01_initial")
     check(bool(matches(root, "Android China Setup")), "launch_and_show_main_screen")
     check(bool(matches(root, "自定义代理")), "proxy_toggle_visible")
     check(bool(matches(root, "设备：")), "device_information_visible")
