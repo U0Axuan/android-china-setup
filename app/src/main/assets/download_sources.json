@@ -1,0 +1,19 @@
+{
+  "version": "0.2",
+  "download": {
+    "strategy": "smart",
+    "official_sources_enabled": true,
+    "trusted_mirrors_enabled": true,
+    "auto_fallback": true,
+    "verify_integrity": true,
+    "verify_apk_signature": true,
+    "proxy": {
+      "enabled": false,
+      "type": "http",
+      "host": "",
+      "port": null
+    }
+  },
+  "sources": [],
+  "note": "下载实现尚未开发；不内置未经验证的镜像地址。"
+}
