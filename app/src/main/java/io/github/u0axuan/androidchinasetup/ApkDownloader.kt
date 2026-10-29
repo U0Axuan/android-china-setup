@@ -2,6 +2,7 @@ package io.github.u0axuan.androidchinasetup
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.net.Uri
 import android.provider.Settings
 import androidx.core.content.FileProvider
@@ -55,19 +56,37 @@ class ApkDownloader(private val context: Context) {
             for (i in 0 until assets.length()) {
                 val asset = assets.getJSONObject(i)
                 val name = asset.optString("name").lowercase()
-                if (name.endsWith(".apk") && !name.contains("debug") && !name.contains("source")
-                    && !name.contains("x86") && !name.contains("armeabi-v7a")) {
+                if (name.endsWith(".apk") && !name.contains("debug") &&
+                    !name.contains("source")) {
                     candidates.add(asset)
                 }
             }
-            require(candidates.isNotEmpty()) { "无适合的 Android APK，请访问项目官网" }
-            val preferred = candidates.filter {
-                val name = it.optString("name").lowercase()
-                name.contains("arm64") || name.contains("universal") || name.contains("all")
+            require(candidates.isNotEmpty()) { "无 APK 发布文件，请访问项目官网" }
+            // Prefer normal upstream signatures over distinct F-Droid distribution
+            // variants where both kinds exist. Never mix signatures on updates.
+            val ordinary = candidates.filter {
+                !it.optString("name").contains("fdroid", ignoreCase = true) &&
+                !it.optString("name").contains("google-play", ignoreCase = true)
             }
-            val chosen = if (preferred.size == 1) preferred.first()
-                else if (candidates.size == 1) candidates.first()
-                else error("存在多个 APK 构建版本，请前往项目发布页手动选择")
+            val pool = ordinary.ifEmpty { candidates }
+            fun abiMatch(name: String, abi: String): Boolean = when (abi) {
+                "arm64-v8a" -> name.contains("arm64") || name.contains("aarch64")
+                "armeabi-v7a" -> name.contains("armeabi-v7a") || name.contains("arm32v7")
+                "x86_64" -> name.contains("x86_64") || name.contains("x64")
+                "x86" -> Regex("(^|[-_.])x86([-_.]|$)").containsMatchIn(name)
+                else -> false
+            }
+            val perDevice = Build.SUPPORTED_ABIS.firstNotNullOfOrNull { abi ->
+                pool.filter { abiMatch(it.optString("name").lowercase(), abi) }
+                    .singleOrNull()
+            }
+            val universal = pool.filter {
+                val name = it.optString("name").lowercase()
+                name.contains("universal") || name.contains("noarch") ||
+                    name.contains("all-arch") || name == "app-release.apk"
+            }.singleOrNull()
+            val chosen = perDevice ?: universal ?: pool.singleOrNull()
+                ?: error("存在多个版本且无法确定匹配架构，请访问项目发布页手动选择")
             val download = chosen.getString("browser_download_url")
             require(URL(download).host.equals("github.com", true)) { "发布资源来源不是 GitHub" }
             val digest = chosen.optString("digest").takeIf { it.startsWith("sha256:") }?.removePrefix("sha256:")
