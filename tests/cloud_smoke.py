@@ -51,7 +51,7 @@ def dump(name="ui"):
                     if n.attrib.get("text") == "Wait"), None)
                 if wait is None:
                     raise AssertionError("System launcher ANR has no Wait button")
-                coords = [int(x) for x in re.findall(r"\\d+", wait.attrib.get("bounds", ""))]
+                coords = [int(x) for x in re.findall(r"\d+", wait.attrib.get("bounds", ""))]
                 if len(coords) == 4:
                     adb("shell", "input", "tap", str((coords[0]+coords[2])//2),
                         str((coords[1]+coords[3])//2))
