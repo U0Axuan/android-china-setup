@@ -1,0 +1,83 @@
+name: Publish First Release v0.3.0
+
+# Deliberately runs once when this workflow is first committed.
+# Future versions should update the version/tag and use a proper release key.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-first-release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: first-release-v0.3.0
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build, verify, and publish v0.3.0
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TAG: v0.3.0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Prepare Android SDK
+        shell: bash
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | sort -V | tail -n1)"
+          fi
+          test -n "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Run unit tests and build installable APK
+        run: gradle :app:testDebugUnitTest :app:assembleDebug --stacktrace
+      - name: Verify package version and Android 11 compatibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | tee /tmp/apk-badging.txt
+          grep -F "sdkVersion:'30'" /tmp/apk-badging.txt
+          grep -F "versionName='0.3.0'" /tmp/apk-badging.txt
+          mkdir -p dist
+          cp "$APK" dist/Android-China-Setup.apk
+          (cd dist && sha256sum Android-China-Setup.apk > SHA256SUMS.txt)
+          cat dist/SHA256SUMS.txt
+      - name: Upload verified release candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-china-setup-v0.3.0-candidate
+          path: dist/
+      - name: Publish GitHub Release and assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "GitHub Release $TAG already exists; not replacing published files."
+            exit 0
+          fi
+          gh release create "$TAG" \
+            dist/Android-China-Setup.apk \
+            dist/SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Android China Setup v0.3.0 · 首个公开测试版" \
+            --notes-file docs/RELEASE_NOTES_v0.3.0.md \
+            --latest
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json url,assets,tagName,isPrerelease
