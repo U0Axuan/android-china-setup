@@ -66,13 +66,17 @@ def tap_text(text, label):
     tap(found[0])
 
 def scroll_to(text):
-    for i in range(12):
-        root = dump("scroll_%02d" % i)
-        found = matches(root, text)
-        if found:
-            return found[0], root
-        adb("shell", "input", "swipe", "500", "1790", "500", "820", "350")
-        time.sleep(0.8)
+    # Search toward the bottom, then upward again; both mirror editor and
+    # the catalog are in one vertically scrolling LazyColumn.
+    for direction in ("down", "up"):
+        for i in range(12):
+            root = dump("scroll_%s_%02d" % (direction, i))
+            found = matches(root, text)
+            if found:
+                return found[0], root
+            y1, y2 = (1790, 820) if direction == "down" else (820, 1790)
+            adb("shell", "input", "swipe", "500", str(y1), "500", str(y2), "250")
+            time.sleep(0.5)
     raise AssertionError("Could not scroll to: " + text)
 
 def pref():
