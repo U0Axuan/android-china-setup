@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """GitHub Actions Android emulator smoke/e2e checks (no desktop or root on the phone)."""
 import json
+import hashlib
+import urllib.request
 import os
 import re
 import subprocess
@@ -165,6 +167,30 @@ try:
             break
     screenshot("11_download_result")
     check(complete, "official_apk_download", status or "Timed out")
+    # Independent SHA-256 verification of the downloaded APK bytes against
+    # current GitHub Release asset metadata.
+    try:
+        req = urllib.request.Request(
+            "https://api.github.com/repos/zhanghai/MaterialFiles/releases/latest",
+            headers={"User-Agent": "Android-China-Setup-CI", "Accept": "application/vnd.github+json"})
+        with urllib.request.urlopen(req, timeout=35) as response:
+            metadata = json.load(response)
+        matching_assets = [a for a in metadata["assets"]
+                           if a["name"] == "app-release-universal.apk"]
+        check(len(matching_assets) == 1 and
+              matching_assets[0]["digest"].startswith("sha256:"),
+              "official_release_digest_available")
+        expected = matching_assets[0]["digest"].split(":", 1)[1]
+        apk_bytes = subprocess.run(
+            ["adb", "exec-out", "run-as", PACKAGE, "cat", "cache/apk_downloads/pending.apk"],
+            check=True, capture_output=True, timeout=40).stdout
+        actual = hashlib.sha256(apk_bytes).hexdigest()
+        check(actual == expected, "download_sha256_matches_official_release",
+              "sha256=" + actual)
+    except Exception as exc:
+        record("independent_digest_check", False, repr(exc))
+        raise
+
     # Request unknown-app permission, then open package installer.
     adb("shell", "appops", "set", PACKAGE, "REQUEST_INSTALL_PACKAGES", "allow")
     tap_text("安装已下载 APK", "12_before_install")
@@ -175,6 +201,23 @@ try:
     # Some platform versions require a separate unknown-sources settings screen.
     check(any(token in all_text for token in ("Install", "安装", "Allow from this source", "允许来自此来源")),
           "android_package_installer_launched", all_text[-450:])
+    if matches(root, "Install"):
+        tap(matches(root, "Install")[-1])
+    elif matches(root, "安装"):
+        tap(matches(root, "安装")[-1])
+    else:
+        raise AssertionError("Installer confirmation action not visible")
+    time.sleep(10)
+    screenshot("14_after_install")
+    installed = adb("shell", "pm", "path", "me.zhanghai.android.files", check=False)
+    check("package:" in installed.stdout, "material_files_actually_installed",
+          installed.stdout.strip() or installed.stderr.strip())
+    # Verify returning to Android China Setup does not crash after installation.
+    adb("shell", "am", "start", "-n", PACKAGE + "/.MainActivity")
+    time.sleep(2)
+    screenshot("15_return_to_app")
+    check(bool(matches(dump("15_return_to_app"), "Android China Setup")),
+          "return_after_install")
 except Exception as exc:
     record("blocking_exception", False, repr(exc))
 finally:
