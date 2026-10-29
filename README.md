@@ -69,6 +69,12 @@ Android China Setup 希望帮助用户发现优秀的 Android 应用，并以更
 
 **安全提示**：GitHub 官方 Release 仍可能包含多个 APK，工具会在无法确定版本时拒绝自动挑选。下载前请自行核对项目及作者身份；不保证所有应用都有 GitHub APK。当前下载器不可作为完整软件供应链验证工具，发布正式版之前必须补充可信签名和证书固定/校验机制。
 
+## 云端实测记录
+- [2026-10-29 Android 15 模拟器测试报告：33/33 检查通过](docs/CLOUD_TEST_REPORT_2026-10-29.md)
+- [测试执行、APK 及界面截图](https://github.com/U0Axuan/android-china-setup/actions/runs/40848698121)
+
+**注意：模拟器测试通过不等于 ARM64 真机、国内运营商网络或所有第三方应用都已经验证。**
+
 ## 构建
 Android Studio 打开仓库；使用 JDK 17 / Android SDK 35。或通过 GitHub Actions 的 Build APK 工作流构建调试版。请查看 Actions 构建结果，不能将未经运行验证的骨架视为正式版本。
 
