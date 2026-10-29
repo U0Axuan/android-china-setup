@@ -1,0 +1,81 @@
+[
+  {
+    "name": "曦码输入法",
+    "category": "输入法",
+    "selected": true,
+    "notice": "默认输入法候选；需用户手动启用",
+    "homepage": "https://ime.ximei.me/",
+    "installMode": "manual"
+  },
+  {
+    "name": "Via 浏览器",
+    "category": "浏览器",
+    "selected": true,
+    "homepage": "https://viayoo.com/",
+    "installMode": "manual"
+  },
+  {
+    "name": "BiliPai",
+    "category": "影视",
+    "selected": false,
+    "homepage": "https://github.com/jay3-yy/BiliPai",
+    "installMode": "manual"
+  },
+  {
+    "name": "FlClash",
+    "category": "网络",
+    "selected": false,
+    "homepage": "https://github.com/vien97/flclash",
+    "installMode": "manual"
+  },
+  {
+    "name": "Shizuku",
+    "category": "系统",
+    "selected": false,
+    "homepage": "https://github.com/RikkaApps/Shizuku",
+    "installMode": "manual"
+  },
+  {
+    "name": "GhostLock",
+    "category": "高级系统工具",
+    "selected": false,
+    "notice": "高风险；不得自动运行",
+    "homepage": "https://github.com/YuKongA/ghostlock-app",
+    "installMode": "manual"
+  },
+  {
+    "name": "知乎++",
+    "category": "资讯",
+    "selected": false,
+    "homepage": "https://github.com/zhihu-plus/android",
+    "installMode": "manual"
+  },
+  {
+    "name": "Obtainium",
+    "category": "应用管理",
+    "selected": true,
+    "homepage": "https://github.com/ImranR98/Obtainium",
+    "installMode": "manual"
+  },
+  {
+    "name": "F-Droid",
+    "category": "应用商店",
+    "selected": false,
+    "homepage": "https://f-droid.org/",
+    "installMode": "manual"
+  },
+  {
+    "name": "Material Files",
+    "category": "文件管理",
+    "selected": true,
+    "homepage": "https://github.com/zhanghai/MaterialFiles",
+    "installMode": "manual"
+  },
+  {
+    "name": "LocalSend",
+    "category": "文件传输",
+    "selected": false,
+    "homepage": "https://localsend.org/",
+    "installMode": "manual"
+  }
+]
