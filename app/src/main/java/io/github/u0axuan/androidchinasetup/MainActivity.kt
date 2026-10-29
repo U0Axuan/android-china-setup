@@ -59,6 +59,8 @@ class MainActivity : ComponentActivity() {
                 var proxyType by remember { mutableStateOf(prefs.getString("proxyType", "HTTP") ?: "HTTP") }
                 var proxyHost by remember { mutableStateOf(prefs.getString("proxyHost", "") ?: "") }
                 var proxyPort by remember { mutableStateOf(prefs.getString("proxyPort", "") ?: "") }
+                var mirrorPrefix by remember { mutableStateOf(prefs.getString("mirrorPrefix", "") ?: "") }
+                var showMirrorSettings by remember { mutableStateOf(false) }
                 var active by remember { mutableStateOf(false) }
                 var progress by remember { mutableIntStateOf(0) }
                 var status by remember { mutableStateOf("请选择应用，点击下载或查看项目官网") }
@@ -77,13 +79,16 @@ class MainActivity : ComponentActivity() {
                     downloadedFile = null
                     status = "正在解析 " + app.name + " 的 GitHub 发布信息"
                     val options = networkOptions()
+                    val mirror = mirrorPrefix
                     Thread {
                         try {
                             val asset = downloader.findLatestApk(app.repository, options)
                             runOnUiThread { status = "正在下载 " + asset.name }
-                            val file = downloader.download(asset, options) { value ->
-                                runOnUiThread { progress = value }
-                            }
+                            runOnUiThread { status = DownloadSources.explain(asset, mirror) }
+                            val file = downloader.download(asset, options, mirror,
+                                { value -> runOnUiThread { progress = value } },
+                                { message -> runOnUiThread { status = message } }
+                            )
                             runOnUiThread {
                                 downloadedFile = file
                                 status = "下载完成：请确认安装来源权限，点击安装"
@@ -104,8 +109,25 @@ class MainActivity : ComponentActivity() {
                         Spacer(Modifier.height(8.dp))
                         Text("设备：" + Build.MANUFACTURER + " " + Build.MODEL +
                             " · Android " + Build.VERSION.RELEASE)
-                        Text("官方 GitHub 发布源优先；镜像切换暂未实现",
+                        Text("官方下载优先；可信 SHA-256 验证后允许镜像故障切换",
                             style = MaterialTheme.typography.bodySmall)
+                        TextButton(onClick = { showMirrorSettings = !showMirrorSettings }) {
+                            Text(if (showMirrorSettings) "收起下载源设置" else "配置下载加速镜像（可选）")
+                        }
+                        if (showMirrorSettings) {
+                            OutlinedTextField(
+                                value = mirrorPrefix,
+                                onValueChange = {
+                                    mirrorPrefix = it.trim()
+                                    prefs.edit().putString("mirrorPrefix", mirrorPrefix).apply()
+                                },
+                                label = { Text("HTTPS 镜像前缀") },
+                                placeholder = { Text("https://mirror.example.com") },
+                                singleLine = true
+                            )
+                            Text("仅在 GitHub 提供 SHA-256 摘要时允许镜像切换。无可信校验信息时只使用官方源。",
+                                style = MaterialTheme.typography.bodySmall)
+                        }
                         Row {
                             Text("自定义代理（默认关闭）", modifier = Modifier.weight(1f))
                             Switch(checked = proxyEnabled, onCheckedChange = {
