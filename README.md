@@ -27,7 +27,7 @@ Android China Setup 希望帮助用户发现优秀的 Android 应用，并以更
 | 输入法 | **曦码输入法（Xime）** | [GitHub](https://github.com/ximeiorg/Xime) · [官网](https://ime.ximei.me/) | 基于 Rime 的中文输入法 | ✅ |
 | 浏览器 | **Via 浏览器** | [官方 GitHub（含本地化资源）](https://github.com/tuyafeng/Via) · [官网](https://viayoo.com/) | 轻量 Android 浏览器 | ✅ |
 | 影视 | **BiliPai** | [GitHub](https://github.com/jay3-yy/BiliPai) | 第三方 B 站客户端 | ⬜ |
-| 网络 | **FlClash** | [GitHub](https://github.com/vien97/flclash) | 网络代理客户端，使用需遵守当地法律法规 | ⬜ |
+| 网络 | **FlClash** | [GitHub](https://github.com/chen08209/FlClash) | 网络代理客户端，使用需遵守当地法律法规 | ⬜ |
 | 系统 | **Shizuku** | [GitHub](https://github.com/RikkaApps/Shizuku) | 为受支持应用提供系统 API 访问机制 | ⬜ |
 | 高级系统工具 | **GhostLock** | [GitHub](https://github.com/YuKongA/ghostlock-app) | 涉及内核提权的高风险工具，仅展示项目入口，不自动运行 | ⬜ |
 | 资讯 | **知乎++（Zhihu++）** | [GitHub](https://github.com/zhihu-plus/android) | 第三方知乎客户端 | ⬜ |
