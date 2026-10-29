@@ -11,8 +11,8 @@ android {
         applicationId = "io.github.u0axuan.androidchinasetup"
         minSdk = 30
         targetSdk = 35
-        versionCode = 3
-        versionName = "0.3.0"
+        versionCode = 4
+        versionName = "0.4.0-dev"
     }
     buildFeatures { compose = true }
     compileOptions {
@@ -22,9 +22,10 @@ android {
     kotlinOptions { jvmTarget = "17" }
 }
 dependencies {
-    implementation(platform("androidx.compose:compose-bom:2024.12.01"))
-    implementation("androidx.activity:activity-compose:1.9.3")
+    implementation(platform("androidx.compose:compose-bom:2026.09.00"))
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-core")
+    implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.core:core-ktx:1.15.0")
     testImplementation("junit:junit:4.13.2")
 }
