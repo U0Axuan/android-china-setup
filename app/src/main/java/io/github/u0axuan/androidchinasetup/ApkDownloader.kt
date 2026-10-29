@@ -94,14 +94,24 @@ class ApkDownloader(private val context: Context) {
         } finally { conn.disconnect() }
     }
 
+    /**
+     * Explicit selection is tried first; AUTO probes all configured public
+     * sources concurrently and ranks reachable ones by response latency.
+     * Checksums come from the official GitHub Release metadata, never mirrors.
+     */
     fun download(
         asset: ReleaseAsset,
         options: NetworkOptions,
-        mirrorPrefix: String,
+        selection: SourceSelection,
         progress: (Int) -> Unit,
         sourceStatus: (String) -> Unit
     ): File {
-        val sources = DownloadSources.candidates(asset, mirrorPrefix)
+        val candidates = DownloadSources.candidates(asset, selection)
+        val sources = if (selection.selectedId == DownloadSources.AUTO &&
+            candidates.size > 1) {
+            sourceStatus("正在测速 ${candidates.size} 个下载源…")
+            orderByConnectivity(candidates, options)
+        } else candidates
         var lastError: Exception? = null
         for ((index, source) in sources.withIndex()) {
             sourceStatus("正在尝试：${source.label}（${index + 1}/${sources.size}）")
@@ -109,10 +119,56 @@ class ApkDownloader(private val context: Context) {
                 return downloadSingle(asset, source.url, options, progress)
             } catch (e: Exception) {
                 lastError = e
-                sourceStatus("${source.label} 失败：${e.message}")
+                sourceStatus("${source.label} 下载失败：${e.message}")
             }
         }
-        throw lastError ?: IllegalStateException("没有可用的可信下载源")
+        throw lastError ?: IllegalStateException("没有可用的下载源")
+    }
+
+    private fun orderByConnectivity(
+        candidates: List<SourceChoice>,
+        options: NetworkOptions
+    ): List<SourceChoice> {
+        val service = java.util.concurrent.Executors.newFixedThreadPool(
+            candidates.size.coerceAtMost(5))
+        return try {
+            val jobs = candidates.map { source ->
+                source to service.submit<Long> {
+                    val start = android.os.SystemClock.elapsedRealtime()
+                    val conn = connection(source.url, options).apply {
+                        connectTimeout = 5000
+                        readTimeout = 5000
+                        requestMethod = "HEAD"
+                    }
+                    try {
+                        val code = conn.responseCode
+                        if (code !in 200..299) Long.MAX_VALUE
+                        else android.os.SystemClock.elapsedRealtime() - start
+                    } catch (_: Exception) {
+                        Long.MAX_VALUE
+                    } finally { conn.disconnect() }
+                }
+            }
+            // All probes run at once, so total timeout stays bounded.
+            val scored = jobs.map { (source, future) ->
+                val ms = try {
+                    future.get(7, java.util.concurrent.TimeUnit.SECONDS)
+                } catch (_: Exception) {
+                    future.cancel(true)
+                    Long.MAX_VALUE
+                }
+                source to ms
+            }
+            // Fastest valid connection first. Failed mirrors remain fallback;
+            // official GitHub is always available as the final alternative.
+            scored.sortedWith(compareBy<Pair<SourceChoice, Long>> {
+                if (it.second == Long.MAX_VALUE) 1 else 0
+            }.thenBy { it.second }
+                .thenBy { if (it.first.id == DownloadSources.OFFICIAL) 1 else 0 })
+                .map { it.first }
+        } finally {
+            service.shutdownNow()
+        }
     }
 
     private fun downloadSingle(asset: ReleaseAsset, sourceUrl: String,
