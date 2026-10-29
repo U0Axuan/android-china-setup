@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import androidx.core.content.FileProvider
-import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.net.HttpURLConnection
@@ -76,11 +75,34 @@ class ApkDownloader(private val context: Context) {
         } finally { conn.disconnect() }
     }
 
-    fun download(asset: ReleaseAsset, options: NetworkOptions, progress: (Int) -> Unit): File {
+    fun download(
+        asset: ReleaseAsset,
+        options: NetworkOptions,
+        mirrorPrefix: String,
+        progress: (Int) -> Unit,
+        sourceStatus: (String) -> Unit
+    ): File {
+        val sources = DownloadSources.candidates(asset, mirrorPrefix)
+        var lastError: Exception? = null
+        for ((index, source) in sources.withIndex()) {
+            sourceStatus("正在尝试：${source.label}（${index + 1}/${sources.size}）")
+            try {
+                return downloadSingle(asset, source.url, options, progress)
+            } catch (e: Exception) {
+                lastError = e
+                sourceStatus("${source.label} 失败：${e.message}")
+            }
+        }
+        throw lastError ?: IllegalStateException("没有可用的可信下载源")
+    }
+
+    private fun downloadSingle(asset: ReleaseAsset, sourceUrl: String,
+        options: NetworkOptions, progress: (Int) -> Unit): File {
         val folder = File(context.cacheDir, "apk_downloads").apply { mkdirs() }
         val target = File(folder, "pending.apk")
-        val connection = connection(asset.url, options)
+        val connection = connection(sourceUrl, options)
         try {
+            target.delete()
             require(connection.responseCode == 200) { "下载失败：HTTP " + connection.responseCode }
             val total = connection.contentLengthLong
             require(total <= 250L * 1024 * 1024 || total == -1L) { "文件过大" }
@@ -101,6 +123,7 @@ class ApkDownloader(private val context: Context) {
                 }
             }
             require(count > 0) { "下载文件为空" }
+            require(total == -1L || count == total) { "下载内容不完整" }
             val actual = md.digest().joinToString("") { "%02x".format(it) }
             asset.sha256?.let { require(actual.equals(it, true)) { "SHA-256 校验失败" } }
             // Android Package Installer validates package structure and signing.
