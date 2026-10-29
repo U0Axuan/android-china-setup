@@ -142,8 +142,11 @@ try:
     # nested settings item in a single LazyColumn.
     adb("shell","dumpsys","gfxinfo",PACKAGE,"reset",check=False)
     for i in range(5): swipe(True)
-    record("Scrollable catalog remains responsive",
-           bool(nodes(dump("scroll_end"),"LocalSend")))
+    # The shared CI image may steal one or more gestures when Pixel Launcher
+    # displays a system ANR. Search until the final catalogue item appears,
+    # instead of assuming a fixed number of swipes is always sufficient.
+    target = find("LocalSend", attempts=12)
+    record("Scrollable catalog remains responsive", target is not None)
     screenshot("02_catalog_scrolled")
     gfx=adb("shell","dumpsys","gfxinfo",PACKAGE,check=False).stdout
     (OUT/"frame_stats.txt").write_text(gfx[-120000:],encoding="utf-8")
