@@ -84,6 +84,10 @@ def check(condition, name, note=""):
         raise AssertionError(name + ": " + note)
 
 try:
+    sdk_api = int(adb("shell", "getprop", "ro.build.version.sdk").stdout.strip())
+    check(sdk_api == int(os.environ.get("EXPECTED_API", sdk_api)),
+          "emulator_expected_android_api", str(sdk_api))
+    check(sdk_api >= 30, "android_11_minimum_supported")
     print("Installing APK:", APK, flush=True)
     install = adb("install", "-r", APK, timeout=120)
     check("Success" in install.stdout, "install_debug_apk", install.stdout.strip())
@@ -100,20 +104,51 @@ try:
           "proxy_disabled_by_default", pref()[:600])
     check(adb("shell", "pidof", PACKAGE, check=False).returncode == 0, "no_crash_on_start")
 
-    # Mirror settings: open panel, save an HTTPS prefix, validate persistence.
+    # Mirror selector: auto, official, presets, and persistent custom sources.
     tap_text("配置下载加速镜像", "02_before_mirror")
-    check(bool(visible("HTTPS 镜像前缀", "03_mirror_open")), "mirror_editor_visible")
     screenshot("03_mirror_open")
-    mirror = matches(dump("03_mirror_field"), "HTTPS 镜像前缀")[0]
-    tap(mirror)
+    check(bool(matches(dump("03_mirror_open"), "智能优选")), "auto_source_option_visible")
+    check("sourceId" not in pref() or "auto" in pref(), "auto_is_default")
+    for source in ("GHFast", "GH-Proxy", "LLKK", "GHProxy.net"):
+        scroll_to(source)
+        record("preset_source_" + source, True)
+
+    # A user can explicitly choose a preset source.
+    gh, _ = scroll_to("GHFast")
+    tap(gh, x_override=65)
+    check('ghfast' in pref(), "preset_source_selection_persisted")
+    screenshot("04_preset_selected")
+
+    # The reference catalogue is discoverable directly inside the app.
+    scroll_to("打开 hiwiki 加速源参考列表")
+    record("hiwiki_reference_link_visible", True)
+
+    # Add a custom HTTPS URL-prefix mirror without ADB or desktop tooling
+    # in the Android app itself; ADB here is only test automation.
+    name, _ = scroll_to("自定义源名称")
+    tap(name)
+    adb("shell", "input", "text", "MyMirror")
+    adb("shell", "input", "keyevent", "4")
+    prefix, _ = scroll_to("自定义 HTTPS 镜像前缀")
+    tap(prefix)
     adb("shell", "input", "text", "https://mirror.example.com")
-    adb("shell", "input", "keyevent", "4")  # hide keyboard
-    time.sleep(1)
-    check("mirror.example.com" in pref(), "mirror_setting_persisted")
-    tap_text("收起下载源设置", "04_close_mirror")
+    adb("shell", "input", "keyevent", "4")
+    button, _ = scroll_to("添加加速源")
+    tap(button)
+    check("mirror.example.com" in pref(), "custom_mirror_persisted", pref()[:800])
+    check("custom-" in pref(), "custom_mirror_selected")
+    screenshot("05_custom_added")
+
+    # Select official source before the live download; test of mirror network
+    # transit/fallback requires a controlled mirror and is not implied here.
+    official, _ = scroll_to("GitHub 官方直连")
+    tap(official, x_override=65)
+    check('official' in pref(), "official_source_selection_persisted")
+    close, _ = scroll_to("收起下载源设置")
+    tap(close)
 
     # Proxy settings: default off, enabled config, SOCKS5, persistence, then off.
-    proxy_label = matches(dump("05_proxy_before"), "自定义代理")[0]
+    proxy_label, _ = scroll_to("自定义代理")
     screen_width = int(re.findall(r"\d+", adb("shell", "wm", "size").stdout)[0])
     tap(proxy_label, x_override=screen_width-65)
     proxy_root = dump("06_proxy_on")
@@ -124,7 +159,7 @@ try:
     check("SOCKS5" in pref(), "socks5_option_persisted")
     screenshot("07_proxy_socks5")
     # Switch off before download.
-    proxy_label = matches(dump("08_proxy_before_off"), "自定义代理")[0]
+    proxy_label, _ = scroll_to("自定义代理")
     tap(proxy_label, x_override=screen_width-65)
     check("proxyEnabled\" value=\"false" in pref(), "proxy_can_be_disabled", pref()[:550])
 
