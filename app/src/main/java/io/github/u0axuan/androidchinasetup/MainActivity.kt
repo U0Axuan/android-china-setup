@@ -227,7 +227,7 @@ class MainActivity : ComponentActivity() {
                     }
                     runOnUiThread {
                         val available = probeResults.values.count { it.latencyMs != null }
-                        speedStatus = "测速完成。可用 " + available + " 个节点；结果为响应延迟，并非下载带宽"
+                        speedStatus = "测速完成。可用 " + available + " 个节点；速率为短时采样估算"
                         speedTesting = false
                     }
                 } catch (e: Exception) {
@@ -459,7 +459,7 @@ private fun SourcesScreen(
     Column(Modifier.fillMaxSize()) {
         Column(Modifier.padding(horizontal = 16.dp)) {
             Text("下载源测速", style = MaterialTheme.typography.headlineSmall)
-            Text("实时检测节点响应延迟，支持手动选择与自定义添加",
+            Text("实时采样节点响应延迟与约 128KB 下载速率，支持手动选择",
                 style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.height(12.dp))
             Button(onClick = test, enabled = !testing, modifier = Modifier.fillMaxWidth()) {
@@ -536,7 +536,7 @@ private fun SourcesScreen(
                         TextButton(onClick = { openUrl(DownloadSources.CATALOG_PAGE) }) {
                             Text("查看 HiWiki 加速源参考列表")
                         }
-                        Text("测速仅测量响应延迟，不代表下载带宽。第三方镜像仅在 GitHub 提供 SHA-256 时使用，下载后会强制校验。",
+                        Text("测速通过 128KB 数据采样估算速率，不代表长期下载性能。第三方镜像仅在 GitHub 提供 SHA-256 时使用，下载后会强制校验。",
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodySmall)
                     }
@@ -568,11 +568,19 @@ private fun SourceRow(
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             if (result != null) {
-                Text(if (result.latencyMs == null) "不可用"
-                     else result.latencyMs.toString() + " ms",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = if (result.latencyMs == null) MaterialTheme.colorScheme.error
-                            else MaterialTheme.colorScheme.primary)
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(if (result.latencyMs == null) "不可用"
+                         else result.latencyMs.toString() + " ms",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (result.latencyMs == null) MaterialTheme.colorScheme.error
+                                else MaterialTheme.colorScheme.primary)
+                    if (result.throughputKBps != null) {
+                        Text(String.format(java.util.Locale.US, "%.1f MB/s",
+                                result.throughputKBps / 1024.0),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
             }
             if (remove != null) TextButton(onClick = remove) { Text("删除") }
         }

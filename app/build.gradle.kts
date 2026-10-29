@@ -14,6 +14,27 @@ android {
         versionCode = 4
         versionName = "0.4.0-dev"
     }
+    // Optional stable release signing. Credentials and keystore are CI secrets,
+    // never checked into the public repository.
+    signingConfigs {
+        val keyFile = System.getenv("ANDROID_SIGNING_STORE_FILE")
+        if (!keyFile.isNullOrBlank()) {
+            create("stableRelease") {
+                storeFile = file(keyFile)
+                storePassword = System.getenv("ANDROID_SIGNING_STORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_SIGNING_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_SIGNING_KEY_PASSWORD")
+            }
+        }
+    }
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+            if (!System.getenv("ANDROID_SIGNING_STORE_FILE").isNullOrBlank()) {
+                signingConfig = signingConfigs.getByName("stableRelease")
+            }
+        }
+    }
     buildFeatures { compose = true }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

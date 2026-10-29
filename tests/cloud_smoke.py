@@ -161,10 +161,11 @@ try:
     record("Proxy control visible",bool(nodes(root,"自定义代理")))
     record("Proxy disabled by default","proxyEnabled" not in pref() or
            'proxyEnabled" value="false' in pref())
-    switches=[n for n in root.iter("node")
-              if n.attrib.get("class")=="android.widget.Switch"]
-    record("Settings switch found",bool(switches))
-    tap(switches[0])
+    proxy_label=find("自定义代理")
+    b=bounds(proxy_label)
+    screen_width=int(re.findall(r"\d+",adb("shell","wm","size").stdout)[0])
+    adb("shell","input","tap",str(screen_width-65),str((b[1]+b[3])//2))
+    time.sleep(1.2)
     record("Proxy host editable",bool(nodes(dump("settings_proxy"),"代理主机/IP")))
     click("SOCKS5")
     record("SOCKS5 selection saved","SOCKS5" in pref())
