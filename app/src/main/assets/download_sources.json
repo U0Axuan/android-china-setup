@@ -1,19 +1,51 @@
 {
-  "version": "0.2",
+  "version": "0.3",
+  "minimum_android_api": 30,
+  "documentation": "https://git.hiwiki.org/zh-CN/mirrors",
+  "sourceSelection": {
+    "default": "auto",
+    "modes": [
+      "auto",
+      "official",
+      "preset",
+      "custom"
+    ],
+    "manualSelection": true,
+    "customSources": true
+  },
+  "presets": [
+    {
+      "id": "ghfast",
+      "name": "GHFast",
+      "prefix": "https://ghfast.top"
+    },
+    {
+      "id": "gh-proxy",
+      "name": "GH-Proxy",
+      "prefix": "https://gh-proxy.com"
+    },
+    {
+      "id": "llkk",
+      "name": "LLKK",
+      "prefix": "https://gh.llkk.cc"
+    },
+    {
+      "id": "ghproxy-net",
+      "name": "GHProxy.net",
+      "prefix": "https://ghproxy.net"
+    }
+  ],
   "download": {
-    "strategy": "smart",
-    "official_sources_enabled": true,
-    "trusted_mirrors_enabled": true,
+    "require_official_sha256_for_mirrors": true,
+    "verify_apk_signature_by_system_installer": true,
+    "auto_latency_test": true,
     "auto_fallback": true,
-    "verify_integrity": true,
-    "verify_apk_signature": true,
     "proxy": {
       "enabled": false,
-      "type": "http",
+      "type": "HTTP",
       "host": "",
       "port": null
     }
   },
-  "sources": [],
-  "note": "下载实现尚未开发；不内置未经验证的镜像地址。"
+  "note": "社区节点不是 GitHub 官方服务；本列表为基于公开资料核实的常用前缀代理示例，不宣称与 hiwiki 网站当前全部节点完全相同。用户可访问网页获取最新列表并在 APP 自行添加。"
 }
