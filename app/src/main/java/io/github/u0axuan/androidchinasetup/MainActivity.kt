@@ -10,6 +10,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -556,7 +557,7 @@ private fun SourceRow(
 ) {
     Surface(color = if (chosen) MaterialTheme.colorScheme.primaryContainer
                      else MaterialTheme.colorScheme.surfaceContainerLow,
-        shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth()) {
+        shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth().clickable(onClick = select)) {
         Row(Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically) {
             RadioButton(selected = chosen, onClick = select)
