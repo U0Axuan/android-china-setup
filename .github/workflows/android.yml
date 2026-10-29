@@ -30,8 +30,14 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Build debug APK
-        run: gradle :app:assembleDebug --stacktrace
+      - name: Test mirror source policy and build APK
+        run: gradle :app:testDebugUnitTest :app:assembleDebug --stacktrace
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mirror-junit-results
+          path: app/build/test-results/testDebugUnitTest/
+          if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         with:
           name: android-china-setup-debug
