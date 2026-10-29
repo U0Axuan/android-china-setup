@@ -37,15 +37,34 @@ def screenshot(name):
         print("screenshot:", e, flush=True)
 
 def dump(name="ui"):
-    for attempt in range(3):
+    # Software-GPU Android 15 CI images occasionally display a Pixel Launcher
+    # ANR dialog. Only dismiss the *system launcher* dialog, never an ANR from
+    # Android China Setup (which must remain a real test failure).
+    for attempt in range(6):
         try:
             adb("shell", "uiautomator", "dump", "/sdcard/window.xml", timeout=50)
             xml = adb("shell", "cat", "/sdcard/window.xml").stdout
+            root = ET.fromstring(xml)
+            titles = [n.attrib.get("text", "") for n in root.iter("node")]
+            if any("Pixel Launcher isn't responding" in t for t in titles):
+                wait = next((n for n in root.iter("node")
+                    if n.attrib.get("text") == "Wait"), None)
+                if wait is None:
+                    raise AssertionError("System launcher ANR has no Wait button")
+                coords = [int(x) for x in re.findall(r"\\d+", wait.attrib.get("bounds", ""))]
+                if len(coords) == 4:
+                    adb("shell", "input", "tap", str((coords[0]+coords[2])//2),
+                        str((coords[1]+coords[3])//2))
+                    print("RECOVER: dismissed Pixel Launcher ANR; app under test not affected", flush=True)
+                    time.sleep(2)
+                    continue
             (OUT / (name + ".xml")).write_text(xml, encoding="utf-8")
-            return ET.fromstring(xml)
+            return root
+        except AssertionError:
+            raise
         except Exception:
             time.sleep(1.5)
-    raise RuntimeError("Unable to dump UI")
+    raise RuntimeError("Unable to obtain unobstructed app UI")
 
 def nodes(root, pattern, exact=False):
     found = []
