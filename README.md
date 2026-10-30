@@ -20,7 +20,7 @@
 
 ## 收录项目
 
-当前目录包含 **17 个项目**，此次新增 [Canta](https://github.com/samolego/Canta)（配合 Shizuku 管理预装应用）和 [Spotube](https://github.com/team-spotube/spotube)（插件式开源音乐播放器）。
+目录数量以[在线清单](catalog/apps.json)为准；此次新增 [Canta](https://github.com/samolego/Canta)（配合 Shizuku 管理预装应用）和 [Spotube](https://github.com/team-spotube/spotube)（插件式开源音乐播放器）。
 
 **[查看全部应用及其原项目地址](catalog/apps.json)**。感谢每个开源项目的开发者和社区贡献者；本项目只提供目录与原站安装包入口，不重新打包第三方应用。
 
