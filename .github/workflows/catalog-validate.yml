@@ -1,0 +1,32 @@
+name: Validate Online Catalog
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'catalog/apps.json'
+      - 'tools/catalog.py'
+      - '.github/workflows/catalog-validate.yml'
+  pull_request:
+    paths:
+      - 'catalog/apps.json'
+      - 'tools/catalog.py'
+      - '.github/workflows/catalog-validate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  catalog:
+    name: Validate catalog without Android build
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate entries and download safety policies
+        run: python3 tools/catalog.py validate
+      - name: Exercise fast-add CLI and invalid metadata rejection
+        run: python3 tools/catalog.py selftest
+      - name: Confirm no Android build is needed
+        run: echo "Catalog-only commits are handled as JSON data; no Gradle, SDK, emulator or APK signing required."

@@ -32,10 +32,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val apps = runCatching { Catalog.read(this) }.getOrDefault(emptyList())
+        val bundled = runCatching { Catalog.read(this) }.getOrDefault(emptyList())
+        val apps = CatalogRepository.load(this, bundled)
         val prefs = getSharedPreferences("preferences", MODE_PRIVATE)
         @Suppress("DEPRECATION")
-        val version = packageManager.getPackageInfo(packageName, 0).versionName ?: "0.5.0-dev"
+        val version = packageManager.getPackageInfo(packageName, 0).versionName ?: "0.6.0-dev"
         setContent {
             AndroidChinaTheme {
                 AppRoot(apps, prefs, version)
@@ -45,7 +46,8 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    private fun AppRoot(apps: List<CatalogApp>, prefs: SharedPreferences, version: String) {
+    private fun AppRoot(initialApps: List<CatalogApp>, prefs: SharedPreferences, version: String) {
+        var apps by remember { mutableStateOf(initialApps) }
         val downloader = remember { ApkDownloader(this) }
         val benchmark = remember { SourceBenchmarker() }
         var settingsOpen by remember { mutableStateOf(false) }
@@ -73,6 +75,10 @@ class MainActivity : ComponentActivity() {
         var updateBusy by remember { mutableStateOf(false) }
         var updateStatus by remember { mutableStateOf("尚未检查更新") }
         var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
+        var catalogBusy by remember { mutableStateOf(false) }
+        var catalogStatus by remember {
+            mutableStateOf("已加载 ${apps.size} 个项目 · 可手动更新在线目录")
+        }
 
         fun network() = NetworkOptions(proxy, proxyType, host.trim(), port.toIntOrNull() ?: 0)
         fun sources() = SourceSelection(sourceId, customs.toList())
@@ -226,7 +232,33 @@ class MainActivity : ComponentActivity() {
             }.start()
         }
 
-        LaunchedEffect(Unit) { checkUpdate() }
+        fun refreshCatalog(manual: Boolean) {
+            if (catalogBusy) return
+            if (!manual && !CatalogRepository.shouldAutoRefresh(this)) return
+            catalogBusy = true
+            catalogStatus = "正在从 GitHub 更新目录…"
+            val net = network()
+            Thread {
+                try {
+                    val result = CatalogRepository.refresh(this, net)
+                    runOnUiThread {
+                        apps = result.apps
+                        catalogStatus = result.message
+                        catalogBusy = false
+                    }
+                } catch (e: Exception) {
+                    runOnUiThread {
+                        catalogStatus = e.message ?: "目录更新失败，已保留离线内容"
+                        catalogBusy = false
+                    }
+                }
+            }.start()
+        }
+
+        LaunchedEffect(Unit) {
+            checkUpdate()
+            refreshCatalog(false)
+        }
         BackHandler(settingsOpen) { settingsOpen = false }
 
         Scaffold(
@@ -279,6 +311,9 @@ class MainActivity : ComponentActivity() {
                 } else {
                     SettingsPage(
                         model = SettingsUiState(
+                            catalogCount = apps.size,
+                            catalogStatus = catalogStatus,
+                            catalogBusy = catalogBusy,
                             selectedSource = sourceId, customSources = customs,
                             probes = probes, speedText = speedText, speedBusy = speedBusy,
                             proxyEnabled = proxy, proxyType = proxyType,
@@ -290,6 +325,7 @@ class MainActivity : ComponentActivity() {
                             downloadPercent = downloadPercent,
                             updateReady = updateDownload && downloadedFile != null
                         ),
+                        refreshCatalog = { refreshCatalog(true) },
                         chooseSource = ::chooseSource,
                         addSource = ::addCustom, removeSource = ::removeCustom,
                         startSpeedTest = ::startBenchmark,

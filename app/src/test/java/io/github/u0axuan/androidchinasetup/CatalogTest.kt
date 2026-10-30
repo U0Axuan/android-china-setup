@@ -36,4 +36,54 @@ class CatalogTest {
         val grouped = Catalog.grouped(listOf(app("X","其他")))
         assertEquals("其他",grouped.single().first)
     }
+
+    private fun jsonApp(name: String = "Spotube"): org.json.JSONObject =
+        org.json.JSONObject()
+            .put("name", name)
+            .put("category", "游戏与影音")
+            .put("summary", "开源音乐播放")
+            .put("readmeSnapshot", "官方项目 README 摘要")
+            .put("homepage", "https://github.com/team-spotube/spotube")
+            .put("readmeUrl", "https://github.com/team-spotube/spotube#readme")
+            .put("repository", "team-spotube/spotube")
+            .put("preferredApkRegex", "^Spotube-android-all-arch\\.apk$")
+
+    @Test fun validExternalCatalogCanBeParsed() {
+        val data = org.json.JSONArray()
+            .put(jsonApp())
+            .put(jsonApp("Canta")
+                .put("category", "系统与调试")
+                .put("repository", "samolego/Canta")
+                .put("risk", "caution"))
+        val result = Catalog.parse(data.toString())
+        assertEquals(2, result.size)
+        assertTrue(result[0].canDownload)
+        assertTrue(result[1].canDownload)
+    }
+
+    @Test fun rejectsUntrustedCatalogUrlsAndDuplicates() {
+        val app = jsonApp()
+        app.put("homepage", "http://localhost/private")
+        val invalid = org.json.JSONArray().put(app)
+        try {
+            Catalog.parse(invalid.toString())
+            fail("HTTP URLs must be rejected")
+        } catch (_: IllegalArgumentException) { }
+        val duplicated = org.json.JSONArray().put(jsonApp()).put(jsonApp())
+        try {
+            Catalog.parse(duplicated.toString())
+            fail("Duplicate names must be rejected")
+        } catch (_: IllegalArgumentException) { }
+    }
+
+    @Test fun highRiskEntriesCannotTurnIntoDirectDownloads() {
+        val app = jsonApp("KSuRoot").put("risk", "high")
+        try {
+            Catalog.parse(org.json.JSONArray().put(app).toString())
+            fail("High-risk APK download must be disallowed")
+        } catch (_: IllegalArgumentException) { }
+        app.put("downloadMode", "external")
+        val result = Catalog.parse(org.json.JSONArray().put(app).toString())
+        assertFalse(result.single().canDownload)
+    }
 }

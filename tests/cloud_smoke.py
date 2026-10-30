@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Android China Setup V0.5 emulator UI smoke checks (API 30 and 35).
+"""Android China Setup V0.6 emulator UI smoke checks (API 30 and 35).
 
 Offline catalog & settings are exercised end-to-end; external APK download
 is optional since public GitHub network can be throttled on cloud runners.
@@ -109,7 +109,7 @@ try:
         adb("shell","am","start","-n",PACKAGE+"/.MainActivity")
     assert_check("App launched",bool(matches(root,"Android China Setup")))
     assert_check("Category index visible",bool(matches(root,"精选 Android 开源应用")))
-    assert_check("Catalog item count visible",bool(matches(root,"15 个项目")))
+    assert_check("Catalog item count visible",bool(matches(root,"17 个项目")))
     assert_check("Settings entry in top bar",bool(matches(root,"设置",True)))
     assert_check("No bottom navigation",not matches(root,"测速",True) and
         not matches(root,"关于",True))
@@ -128,12 +128,12 @@ try:
     adb("shell","input","keyevent","4")
     time.sleep(2)
 
-    # Single LazyColumn with grouped sections and all 15 entries.
+    # Single LazyColumn with grouped sections and all 17 entries.
     for category in ["日常与效率","游戏与影音","网络与连接",
                      "应用与文件","系统与调试","高级与 Root"]:
         find(category)
         assert_check("Category "+category,True)
-    for name in ["osu! (lazer)","DroidDeck","DirtyFrag","KSuRoot","LocalSend"]:
+    for name in ["osu! (lazer)","DroidDeck","Spotube","Canta","DirtyFrag","KSuRoot","LocalSend"]:
         find(name)
         assert_check("Catalog "+name,True)
     shot("03_catalog_bottom")
@@ -166,6 +166,8 @@ try:
     click("设置",True)
     root=dump("06_settings")
     assert_check("Settings opened",bool(matches(root,"下载加速与测速")))
+    assert_check("Online catalog controls shown",bool(matches(root,"刷新应用目录")))
+    assert_check("Online catalog count shown",bool(matches(root,"已收录 17 个开源项目")))
     assert_check("Speed test integrated",bool(matches(root,"开始测速")))
     assert_check("Auto mirror selector",bool(matches(root,"智能优选")))
     shot("06_settings_speed")

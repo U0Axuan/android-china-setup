@@ -14,6 +14,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 data class SettingsUiState(
+    val catalogCount: Int,
+    val catalogStatus: String,
+    val catalogBusy: Boolean,
     val selectedSource: String,
     val customSources: List<MirrorSource>,
     val probes: Map<String, ProbeResult>,
@@ -36,6 +39,7 @@ data class SettingsUiState(
 @Composable
 fun SettingsPage(
     model: SettingsUiState,
+    refreshCatalog: () -> Unit,
     chooseSource: (String) -> Unit,
     addSource: (MirrorSource) -> Boolean,
     removeSource: (String) -> Unit,
@@ -66,6 +70,22 @@ fun SettingsPage(
             Column(Modifier.padding(bottom = 6.dp)) {
                 Text("设置", style = MaterialTheme.typography.headlineSmall)
                 Text("下载源、测速、代理与版本更新",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        item(key = "catalog-refresh") {
+            SettingsPanel("应用目录") {
+                Text("已收录 ${model.catalogCount} 个开源项目",
+                    style = MaterialTheme.typography.bodyMedium)
+                Text(model.catalogStatus,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Button(onClick = refreshCatalog, enabled = !model.catalogBusy,
+                    modifier = Modifier.fillMaxWidth()) {
+                    Text(if (model.catalogBusy) "正在更新…" else "刷新应用目录")
+                }
+                Text("在线更新只替换应用目录，不下载新 APK；离线时继续使用缓存或内置清单。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

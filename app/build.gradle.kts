@@ -11,8 +11,8 @@ android {
         applicationId = "io.github.u0axuan.androidchinasetup"
         minSdk = 30
         targetSdk = 35
-        versionCode = 5
-        versionName = "0.5.0"
+        versionCode = 6
+        versionName = "0.6.0-dev"
     }
     // Optional stable release signing. Credentials and keystore are CI secrets,
     // never checked into the public repository.
@@ -49,4 +49,5 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.core:core-ktx:1.15.0")
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")
 }

@@ -58,6 +58,17 @@
     "notice": "仅适配特定 Adreno GPU；MTK/Mali 不支持"
   },
   {
+    "name": "Spotube",
+    "category": "游戏与影音",
+    "summary": "开源跨平台音乐播放器，通过可扩展音源插件播放与管理音乐。",
+    "readmeSnapshot": "官方 README：Spotube 是可扩展的开源音乐客户端，支持社区音源插件、本地播放控制、同步歌词与曲目下载，Android 和桌面端均可使用。音源可用性可能受地区、服务接口及插件影响，使用时请遵守音乐版权与服务条款。",
+    "homepage": "https://github.com/team-spotube/spotube",
+    "readmeUrl": "https://github.com/team-spotube/spotube#readme",
+    "repository": "team-spotube/spotube",
+    "preferredApkRegex": "^Spotube-android-all-arch\\.apk$",
+    "notice": "音源依赖插件及网络环境；安装包约 128 MB"
+  },
+  {
     "name": "FlClash",
     "category": "网络与连接",
     "summary": "跨平台网络代理客户端，方便管理个人网络配置。",
@@ -110,6 +121,18 @@
     "homepage": "https://github.com/RikkaApps/Shizuku",
     "readmeUrl": "https://github.com/RikkaApps/Shizuku#readme",
     "repository": "RikkaApps/Shizuku"
+  },
+  {
+    "name": "Canta",
+    "category": "系统与调试",
+    "summary": "通过 Shizuku 管理和卸载不需要的系统预装应用，无需 Root。",
+    "readmeSnapshot": "官方 README：Canta 通过 Shizuku 卸载预装或用户应用，集成 Universal Debloat List 提供移除建议，支持 Android 9+。移除关键系统组件可能造成无法启动并需恢复出厂设置。请先激活 Shizuku，确认每项组件用途。",
+    "homepage": "https://github.com/samolego/Canta",
+    "readmeUrl": "https://github.com/samolego/Canta#readme",
+    "repository": "samolego/Canta",
+    "preferredApkRegex": "^androidApp-release\\.apk$",
+    "notice": "需 Shizuku；误删关键系统应用可能导致无法启动",
+    "risk": "caution"
   },
   {
     "name": "GhostLock",
