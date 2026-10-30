@@ -27,6 +27,17 @@ git push
 - CI 使用 Python 标准库校验重复名称、必填简介和 README 快照、HTTPS、官方仓库名、允许的安装模式以及高风险项目限制。
 - App 下载在线目录后还会进行本地校验，成功后才原子替换缓存，遇到网络错误/无效 JSON 不覆盖上次有效目录。
 
+## 应用入选要求自动核验
+
+每次修改 `catalog/apps.json` 或审核脚本时，**Validate Online Catalog** 将运行 `python3 tools/catalog_audit.py --strict`，逐项查询 GitHub 公开仓库信息，检查源码和许可证、公开版本发布页、近六个月维护情况以及安全扫描证据。结果在 GitHub Actions 的 **Job Summary** 中按应用列出，并通过 Warning / Error 注解提示。
+
+- **FAIL**：已能确认仓库私有、已归档或不可用等不符合事项，校验失败。
+- **REVIEW**：缺少公开证据、接口不可用、许可证无法识别、近期缺乏有效维护证据或安全扫描结果尚不能证明无高危风险；给出警告，需人工复核，不冒充“已通过”。
+- 公共接口的 Code Scanning 结果不等于完整安全报告；必须结合恶意软件检测、已知漏洞和人工核验。GitHub 以外的 GitLab / Codeberg 项目目前标记待核验。
+- 本检查只依赖 Python 标准库和 GitHub API，**不会触发 Android 构建或 APK 发布**。
+
+本地可以运行 `python3 tools/catalog_audit.py` 查看提示；添加 `--strict` 时发现明确不符合的项目会返回非零退出码。仓库 API 限流或网络故障只会生成待核验提示，不作为安全失败结论。
+
 ## 在线来源、权限与安全边界
 
 目录只来自本项目 GitHub 的 `main/catalog/apps.json`，优先使用 `raw.githubusercontent.com`，失败时尝试 GitHub Contents API。HTTPS 及字段校验阻止异常地址和误配置；**网络访问 GitHub 仍可能在中国大陆受限**，因此必须保留离线兜底。
