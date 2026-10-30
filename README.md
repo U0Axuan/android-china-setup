@@ -8,7 +8,7 @@
 
 **[下载正式版 APK](https://github.com/U0Axuan/android-china-setup/releases/latest/download/Android-China-Setup.apk)** · [发布记录](https://github.com/U0Axuan/android-china-setup/releases) · [反馈 / 推荐项目](https://github.com/U0Axuan/android-china-setup/issues/new)
 
-> GitHub Latest 目前仍为 **v0.5.0 固定签名版**。在线目录和 Canta / Spotube 的内置支持已加入主分支的 **v0.6.0 开发版**，尚需新版 APK 发布后才能在手机上使用在线刷新。
+> **当前 GitHub Latest：v0.6.0 固定签名正式版。** 该版本起支持在线应用目录刷新；以后只更新 [catalog/apps.json](catalog/apps.json) 即可增删应用，用户不需要重新下载安装 APK。
 
 ## 功能
 
