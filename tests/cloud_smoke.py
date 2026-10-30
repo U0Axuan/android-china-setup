@@ -212,7 +212,7 @@ try:
     # reported y=2317..2400 on a 2400px screen). A tap there can be
     # intercepted by the system gesture/navigation area. Scroll until the
     # *entire* switch is in the safe centre of the view before tapping it.
-    height=int(re.findall(r"\\d+",adb("shell","wm","size").stdout)[-1])
+    height=int(re.findall(r"\d+",adb("shell","wm","size").stdout)[-1])
     def visible_proxy_switch(label):
         ui=dump(label)
         labels=matches(ui,"自定义代理（默认关闭）")
