@@ -208,22 +208,52 @@ try:
     shot("08_speed_results")
 
     # Proxy and About are sections of the same Settings page.
-    field=find("自定义代理（默认关闭）")
-    row_y=(bounds(field)[1]+bounds(field)[3])//2
-    root=dump("09_proxy_toggle")
-    toggles=[n for n in root.iter("node")
-        if n.attrib.get("checkable")=="true" and
-           n.attrib.get("clickable")=="true"]
-    assert_check("Proxy toggle exists",bool(toggles))
-    toggle=min(toggles,key=lambda n:abs((bounds(n)[1]+bounds(n)[3])//2-row_y))
-    tap(toggle)
-    # In the expanded settings card the host field may lie below the screen;
-    # an absent UIAutomator node does not mean the Switch failed.
-    switched=dump("09_proxy_on")
-    near=[n for n in switched.iter("node") if n.attrib.get("checkable")=="true"
-          and n.attrib.get("checked")=="true" and
-          abs((bounds(n)[1]+bounds(n)[3])//2-row_y)<140]
-    assert_check("Proxy switch enabled",bool(near))
+    # The proxy row can be only partly visible at the bottom (Android 15
+    # reported y=2317..2400 on a 2400px screen). A tap there can be
+    # intercepted by the system gesture/navigation area. Scroll until the
+    # *entire* switch is in the safe centre of the view before tapping it.
+    height=int(re.findall(r"\\d+",adb("shell","wm","size").stdout)[-1])
+    def visible_proxy_switch(label):
+        ui=dump(label)
+        labels=matches(ui,"自定义代理（默认关闭）")
+        if not labels:
+            return None
+        row=(bounds(labels[0])[1]+bounds(labels[0])[3])//2
+        switches=[n for n in ui.iter("node")
+                  if n.attrib.get("checkable")=="true"
+                  and n.attrib.get("class")=="android.view.View"
+                  and n.attrib.get("clickable")=="true"
+                  and len(bounds(n))==4
+                  and abs((bounds(n)[1]+bounds(n)[3])//2-row)<170]
+        if not switches:
+            return None
+        switch=min(switches,key=lambda n:
+            abs((bounds(n)[1]+bounds(n)[3])//2-row))
+        box=bounds(switch)
+        if box[1] < height*0.18 or box[3] > height*0.78:
+            return None
+        return switch
+    toggle=None
+    for attempt in range(7):
+        toggle=visible_proxy_switch("09_proxy_visible_"+str(attempt))
+        if toggle is not None:
+            break
+        swipe(True)
+    assert_check("Proxy toggle fully visible in safe touch area",toggle is not None)
+    # Verify actual state, not that the tap command merely returned.
+    if toggle.attrib.get("checked")!="true":
+        tap(toggle)
+    for attempt in range(4):
+        switch=visible_proxy_switch("09_proxy_on_"+str(attempt))
+        if switch is not None and switch.attrib.get("checked")=="true":
+            break
+        if switch is not None:
+            tap(switch)
+        else:
+            swipe(True)
+        time.sleep(0.7)
+    assert_check("Proxy switch enabled",
+        switch is not None and switch.attrib.get("checked")=="true")
     host_field=find("代理主机/IP",attempts=8)
     assert_check("Proxy details shown",host_field is not None)
     click("SOCKS5")
