@@ -1,52 +1,53 @@
 # Android China Setup
 
-<img src="assets/logo.svg" alt="Android China Setup Logo" width="84" align="right" />
+<img src="assets/logo.svg" width="82" align="right" alt="Android China Setup 极客 Logo">
 
-专为中国大陆网络环境设计的 Android 应用初始化助手。**Android 11+**，无需电脑、Root 或 ADB。
+专为中国大陆网络环境准备的 Android 开源应用目录和安装助手。**支持 Android 11+**，无需 Root、电脑或 ADB。
 
-[![Latest Release](https://img.shields.io/github/v/release/U0Axuan/android-china-setup?label=Latest)](https://github.com/U0Axuan/android-china-setup/releases/latest)
-[![Download APK](https://img.shields.io/badge/%E4%B8%8B%E8%BD%BD-Android%20APK-1467CF)](https://github.com/U0Axuan/android-china-setup/releases/latest/download/Android-China-Setup.apk)
+[![Latest](https://img.shields.io/github/v/release/U0Axuan/android-china-setup?label=Latest)](https://github.com/U0Axuan/android-china-setup/releases/latest)
+[![APK](https://img.shields.io/badge/下载-最新APK-12A89D)](https://github.com/U0Axuan/android-china-setup/releases/latest/download/Android-China-Setup.apk)
 
-**[⬇️ 下载最新 APK](https://github.com/U0Axuan/android-china-setup/releases/latest/download/Android-China-Setup.apk)** · [最新版本说明](https://github.com/U0Axuan/android-china-setup/releases/latest) · [历史版本](https://github.com/U0Axuan/android-china-setup/releases)
+**[下载最新版 APK](https://github.com/U0Axuan/android-china-setup/releases/latest/download/Android-China-Setup.apk)** · [发布记录](https://github.com/U0Axuan/android-china-setup/releases) · [问题反馈](https://github.com/U0Axuan/android-china-setup/issues)
 
-> 下载直链始终指向 GitHub Latest Release 中的 `Android-China-Setup.apk`，无需随版本修改。当前仍是公开测试阶段，建议先查看发布说明。
+> 下载地址永远指向 GitHub Latest Release。主分支的新版分类界面正在开发验证，**不等于已经发布到 Latest**。
 
-## 主要功能
+## 功能
 
-- **精选应用**：内置 11 个项目，单个应用按需下载，提供「访问原项目」入口。
-- **下载加速**：GitHub 官方源、GHFast / GH-Proxy / LLKK / GHProxy.net，以及手动添加的 HTTPS 镜像。
-- **可见测速**：「测速」页面显示响应延迟和约 128 KB 样本估算速率，支持手动选源。
-- **安全安装**：官方 SHA-256 可用时校验下载文件，交由 Android 系统安装器确认；不静默安装。
-- **自更新**：「关于」页面检查 GitHub 最新版本、下载更新并校验 APK 签名；HTTP / SOCKS5 代理可选，默认关闭。
-- **Material 3**：动态配色、明暗主题、底部导航和自适应极简图标。
+- **分类发现**：15 款精选 Android 应用，按六类分组展示，一句话简介和可离线查看的 README 摘要；每项都能访问原项目。
+- **按需下载安装**：没有复选框或自动批量安装；普通项目可以从 GitHub 官方 Release 获取 APK 并交给系统确认安装。
+- **多下载源**：官方直连、4 个预置 HTTPS 镜像及自定义源；支持响应测速和小样本速率估算。
+- **统一设置**：右上角设置入口包含测速、代理（默认关闭）、关于和应用自更新。
+- **Material 3**：动态配色、暗色模式、极简开源终端风格 Logo，单 LazyColumn 与离线目录以减少滑动负担。
 
-## 收录项目与致谢
+## 收录与致谢
 
-感谢以下项目的开发者与社区贡献者。链接均指向原项目；本仓库不重新分发它们的安装包或代码。
+特别感谢以下项目的作者和维护者。本项目提供的是目录入口和 README 摘要，**不会重新打包第三方软件**。
 
-| 类别 | 项目 | 官方来源 |
+| 类别 | 项目 | 原项目 |
 | --- | --- | --- |
-| 输入法 | 曦码输入法 Xime | [GitHub](https://github.com/ximeiorg/Xime) · [官网](https://ime.ximei.me/) |
-| 浏览器 | Via | [官网](https://viayoo.com/) |
-| 视频 | BiliPai | [GitHub](https://github.com/jay3-yy/BiliPai) |
-| 网络 | FlClash | [GitHub](https://github.com/chen08209/FlClash) |
-| 系统 | Shizuku | [GitHub](https://github.com/RikkaApps/Shizuku) |
-| 高级工具 | GhostLock | [GitHub](https://github.com/YuKongA/ghostlock-app) |
-| 资讯 | 知乎++ | [GitHub](https://github.com/zhihu-plus/android) |
-| 应用更新 | Obtainium | [GitHub](https://github.com/ImranR98/Obtainium) |
-| 应用商店 | F-Droid | [官网](https://f-droid.org/) |
-| 文件管理 | Material Files | [GitHub](https://github.com/zhanghai/MaterialFiles) |
-| 文件传输 | LocalSend | [GitHub](https://github.com/localsend/localsend) |
+| 日常与效率 | 曦码输入法 | [ximeiorg/Xime](https://github.com/ximeiorg/Xime) |
+| 日常与效率 | Via 浏览器 | [Via 官网](https://viayoo.com/) |
+| 日常与效率 | 知乎++ | [zhihu-plus/android](https://github.com/zhihu-plus/android) |
+| 游戏与影音 | BiliPai | [jay3-yy/BiliPai](https://github.com/jay3-yy/BiliPai) |
+| 游戏与影音 | **osu! (lazer)** | [ppy/osu](https://github.com/ppy/osu) |
+| 游戏与影音 | **DroidDeck** | [Droid-Deck/DroidDeck](https://github.com/Droid-Deck/DroidDeck) |
+| 网络与连接 | FlClash | [chen08209/FlClash](https://github.com/chen08209/FlClash) |
+| 网络与连接 | LocalSend | [localsend/localsend](https://github.com/localsend/localsend) |
+| 应用与文件 | Obtainium | [ImranR98/Obtainium](https://github.com/ImranR98/Obtainium) |
+| 应用与文件 | F-Droid | [f-droid.org](https://f-droid.org/) |
+| 应用与文件 | Material Files | [zhanghai/MaterialFiles](https://github.com/zhanghai/MaterialFiles) |
+| 系统与调试 | Shizuku | [RikkaApps/Shizuku](https://github.com/RikkaApps/Shizuku) |
+| 高级与 Root | GhostLock | [YuKongA/ghostlock-app](https://github.com/YuKongA/ghostlock-app) |
+| 高级与 Root | **DirtyFrag** | [mitschud/DirtyFrag](https://github.com/mitschud/DirtyFrag) |
+| 高级与 Root | **KSuRoot** | [hmascs/KSuRoot](https://github.com/hmascs/KSuRoot) |
 
-🌟 **欢迎推荐更多优秀 Android 项目！** 请通过 [GitHub Issues](https://github.com/U0Axuan/android-china-setup/issues/new) 提交项目地址、功能、许可证和推荐理由，也欢迎通过 Pull Request 贡献改进。喜欢这些项目，也请为原作者 Star 或提供支持。
+**欢迎推荐更多优秀 Android 项目！** 在 [Issues](https://github.com/U0Axuan/android-china-setup/issues/new) 附上项目地址、用途、许可证及推荐理由，也欢迎 Star 原作者或贡献 Pull Request。
 
-## 兼容性与注意事项
+## 兼容性与安全
 
-- **最低 Android 11 / API 30**；Android 11、15 云端模拟器 UI 检查通过：[测试报告](docs/V0.4_UI_TEST_REPORT.md)。
-- 镜像只加速 APK 文件，获取 Release 元数据仍需访问 GitHub API；国内运营商网络、ARM64 真机和滑动掉帧尚需专项验证。
-- **签名注意**：首版 v0.3.0 和当前测试版使用 CI Debug 签名，不保证相互覆盖升级；Android 不允许使用不同证书直接覆盖安装。发布方配置固定签名后，才能保证后续同签名升级。详见[签名与自更新说明](docs/UPDATE_SIGNING.md)。
-- GhostLock 为高风险项目，仅提供外部链接，不自动运行或提权；第三方项目的版权与许可证归原作者所有。
+- 本应用最低 **Android 11（API 30）**。DroidDeck 原项目要求 Adreno 730+ 或 8xx，**MTK/Mali 设备不在其支持范围**；osu! 官方 APK 体积较大，请预留空间。
+- DirtyFrag、KSuRoot、GhostLock 涉及内核漏洞或提权，**只提供链接与 README 摘要，不自动下载或执行**。使用前须评估设备固件兼容性和风险。
+- 镜像仅在 GitHub 提供 SHA-256 时使用并校验；更新安装必须兼容签名。旧版 CI Debug 签名可能无法覆盖升级。
+- Android 11/15 自动化测试由 [GitHub Actions](https://github.com/U0Axuan/android-china-setup/actions) 执行，ARM64 真机与国内网络效果仍需验证。
 
-## 构建
-
-使用 Android Studio、JDK 17 和 Android SDK 35；或运行 [GitHub Actions](https://github.com/U0Axuan/android-china-setup/actions)。项目采用 Kotlin、Jetpack Compose 与 Material 3，按 MIT License 开源。
+项目代码使用 MIT License。第三方应用各自许可及商标归原权利人所有。

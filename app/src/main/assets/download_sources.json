@@ -1,51 +1,16 @@
 {
-  "version": "0.3",
+  "version": "0.5",
   "minimum_android_api": 30,
-  "documentation": "https://git.hiwiki.org/zh-CN/mirrors",
-  "sourceSelection": {
-    "default": "auto",
-    "modes": [
-      "auto",
-      "official",
-      "preset",
-      "custom"
-    ],
-    "manualSelection": true,
-    "customSources": true
-  },
-  "presets": [
-    {
-      "id": "ghfast",
-      "name": "GHFast",
-      "prefix": "https://ghfast.top"
-    },
-    {
-      "id": "gh-proxy",
-      "name": "GH-Proxy",
-      "prefix": "https://gh-proxy.com"
-    },
-    {
-      "id": "llkk",
-      "name": "LLKK",
-      "prefix": "https://gh.llkk.cc"
-    },
-    {
-      "id": "ghproxy-net",
-      "name": "GHProxy.net",
-      "prefix": "https://ghproxy.net"
-    }
+  "selection": "auto",
+  "sourceCatalog": "https://git.hiwiki.org/zh-CN/mirrors",
+  "mirrorIds": [
+    "ghfast",
+    "gh-proxy",
+    "llkk",
+    "ghproxy-net"
   ],
-  "download": {
-    "require_official_sha256_for_mirrors": true,
-    "verify_apk_signature_by_system_installer": true,
-    "auto_latency_test": true,
-    "auto_fallback": true,
-    "proxy": {
-      "enabled": false,
-      "type": "HTTP",
-      "host": "",
-      "port": null
-    }
-  },
-  "note": "社区节点不是 GitHub 官方服务；本列表为基于公开资料核实的常用前缀代理示例，不宣称与 hiwiki 网站当前全部节点完全相同。用户可访问网页获取最新列表并在 APP 自行添加。"
+  "customSourcesSupported": true,
+  "proxyDefaultEnabled": false,
+  "mirrorRequiresOfficialSha256": true,
+  "downloadSizeMaxMiB": 1024
 }

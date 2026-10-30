@@ -44,7 +44,7 @@ class ApkDownloader(private val context: Context) {
         }
     }
 
-    fun findLatestApk(repository: String, options: NetworkOptions): ReleaseAsset {
+    fun findLatestApk(repository: String, options: NetworkOptions, preferredApkRegex: String = ""): ReleaseAsset {
         require(Regex("^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$").matches(repository)) { "项目地址不合法" }
         val api = "https://api.github.com/repos/" + repository + "/releases/latest"
         val conn = connection(api, options)
@@ -85,7 +85,15 @@ class ApkDownloader(private val context: Context) {
                 name.contains("universal") || name.contains("noarch") ||
                     name.contains("all-arch") || name == "app-release.apk"
             }.singleOrNull()
-            val chosen = perDevice ?: universal ?: pool.singleOrNull()
+            // Some projects publish several *distribution variants* for one
+            // version. A trusted, hardcoded catalog pattern chooses the plain
+            // upstream APK rather than guessing from size or asset order.
+            val named = if (preferredApkRegex.isNotBlank()) {
+                val pattern = Regex(preferredApkRegex)
+                candidates.filter { pattern.matches(it.getString("name")) }.singleOrNull()
+                    ?: error("未找到唯一的官方 APK 版本，请到原项目发布页手动选择")
+            } else null
+            val chosen = named ?: perDevice ?: universal ?: pool.singleOrNull()
                 ?: error("存在多个版本且无法确定匹配架构，请访问项目发布页手动选择")
             val download = chosen.getString("browser_download_url")
             require(URL(download).host.equals("github.com", true)) { "发布资源来源不是 GitHub" }
@@ -180,7 +188,13 @@ class ApkDownloader(private val context: Context) {
             target.delete()
             require(connection.responseCode == 200) { "下载失败：HTTP " + connection.responseCode }
             val total = connection.contentLengthLong
-            require(total <= 250L * 1024 * 1024 || total == -1L) { "文件过大" }
+            require(total <= 1024L * 1024 * 1024 || total == -1L) { "文件超过 1GB 限制" }
+            if (total > 0) {
+                val freeBytes = android.os.StatFs(folder.absolutePath).availableBytes
+                require(freeBytes > total + 32L * 1024 * 1024) {
+                    "手机存储空间不足，下载需要额外预留至少 32MB"
+                }
+            }
             val md = MessageDigest.getInstance("SHA-256")
             var count = 0L
             connection.inputStream.use { stream ->
@@ -190,7 +204,7 @@ class ApkDownloader(private val context: Context) {
                         val n = stream.read(buffer)
                         if (n < 0) break
                         count += n
-                        require(count <= 250L * 1024 * 1024) { "超出文件大小限制" }
+                        require(count <= 1024L * 1024 * 1024) { "超出文件大小限制" }
                         output.write(buffer, 0, n)
                         md.update(buffer, 0, n)
                         if (total > 0) progress((count * 100 / total).toInt().coerceIn(0, 100))

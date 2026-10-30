@@ -2,12 +2,16 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp" android:height="108dp"
     android:viewportWidth="108" android:viewportHeight="108">
-    <!-- Keep strokes inside Android's central 66dp adaptive-icon safe zone. -->
-    <path android:pathData="M75,37 C70,31 63,28 54,28 C39,28 28,40 28,54 C28,70 39,81 54,81 C65,81 74,75 78,67"
-        android:strokeColor="#155CCC" android:strokeWidth="8"
-        android:strokeLineCap="round" android:fillColor="#00000000"/>
-    <path android:pathData="M54,41 L54,64 M43,54 L54,65 L65,54"
-        android:strokeColor="#03AFA8" android:strokeWidth="8"
+    <!-- Geek / open-source terminal brackets within adaptive-icon safe area -->
+    <path android:pathData="M44,32 L32,43 L32,65 L44,76"
+        android:strokeColor="#46F6AE" android:strokeWidth="7.5"
         android:strokeLineCap="round" android:strokeLineJoin="round"
-        android:fillColor="#00000000"/>
+        android:fillColor="#00000000" />
+    <path android:pathData="M64,32 L76,43 L76,65 L64,76"
+        android:strokeColor="#4AB6FF" android:strokeWidth="7.5"
+        android:strokeLineCap="round" android:strokeLineJoin="round"
+        android:fillColor="#00000000" />
+    <path android:pathData="M60,35 L48,73"
+        android:strokeColor="#E7FFF8" android:strokeWidth="7"
+        android:strokeLineCap="round" android:fillColor="#00000000" />
 </vector>

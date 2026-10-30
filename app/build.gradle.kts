@@ -11,8 +11,8 @@ android {
         applicationId = "io.github.u0axuan.androidchinasetup"
         minSdk = 30
         targetSdk = 35
-        versionCode = 4
-        versionName = "0.4.0"
+        versionCode = 5
+        versionName = "0.5.0-dev"
     }
     // Optional stable release signing. Credentials and keystore are CI secrets,
     // never checked into the public repository.

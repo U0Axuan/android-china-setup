@@ -1,78 +1,147 @@
 [
   {
     "name": "曦码输入法",
-    "category": "输入法",
-    "selected": true,
-    "notice": "默认输入法需手动启用",
+    "category": "日常与效率",
+    "summary": "基于 Rime 的中文输入法，适合重视可定制输入体验的用户。",
+    "readmeSnapshot": "项目围绕 Rime 输入方案提供 Android 中文输入体验。安装后仍需在 Android 系统设置中启用并切换默认输入法。",
     "homepage": "https://ime.ximei.me/",
+    "readmeUrl": "https://github.com/ximeiorg/Xime#readme",
     "repository": "ximeiorg/Xime"
   },
   {
     "name": "Via 浏览器",
-    "category": "浏览器",
-    "selected": true,
-    "homepage": "https://viayoo.com/"
-  },
-  {
-    "name": "BiliPai",
-    "category": "影视",
-    "selected": false,
-    "homepage": "https://github.com/jay3-yy/BiliPai",
-    "repository": "jay3-yy/BiliPai"
-  },
-  {
-    "name": "FlClash",
-    "category": "网络",
-    "selected": false,
-    "homepage": "https://github.com/chen08209/FlClash",
-    "repository": "chen08209/FlClash"
-  },
-  {
-    "name": "Shizuku",
-    "category": "系统",
-    "selected": false,
-    "homepage": "https://github.com/RikkaApps/Shizuku",
-    "repository": "RikkaApps/Shizuku"
-  },
-  {
-    "name": "GhostLock",
-    "category": "高级系统工具",
-    "selected": false,
-    "notice": "高风险；仅展示项目官网",
-    "homepage": "https://github.com/YuKongA/ghostlock-app"
+    "category": "日常与效率",
+    "summary": "轻量、简洁的 Android 浏览器，强调速度和日常网页浏览。",
+    "readmeSnapshot": "轻量级移动浏览器，提供简洁界面与基础网页功能。通过官网提供的渠道下载；本工具不代替官方分发。",
+    "homepage": "https://viayoo.com/",
+    "readmeUrl": "https://github.com/tuyafeng/Via#readme",
+    "downloadMode": "external"
   },
   {
     "name": "知乎++",
-    "category": "资讯",
-    "selected": false,
+    "category": "日常与效率",
+    "summary": "社区维护的第三方知乎客户端。",
+    "readmeSnapshot": "面向知乎阅读体验的第三方客户端，功能与兼容性以开发者说明为准。使用前可到原仓库核对授权及更新状态。",
     "homepage": "https://github.com/zhihu-plus/android",
+    "readmeUrl": "https://github.com/zhihu-plus/android#readme",
     "repository": "zhihu-plus/android"
   },
   {
+    "name": "BiliPai",
+    "category": "游戏与影音",
+    "summary": "面向 Bilibili 的第三方视频客户端。",
+    "readmeSnapshot": "提供视频浏览与播放体验的第三方应用。与 Bilibili 官方客户端不同，功能可用性请参考原项目的 README 和发行记录。",
+    "homepage": "https://github.com/jay3-yy/BiliPai",
+    "readmeUrl": "https://github.com/jay3-yy/BiliPai#readme",
+    "repository": "jay3-yy/BiliPai"
+  },
+  {
+    "name": "osu! (lazer)",
+    "category": "游戏与影音",
+    "summary": "跨平台开源节奏游戏，Android 版由官方持续开发。",
+    "readmeSnapshot": "官方 README：osu! 是 free-to-win 的节奏游戏；lazer 是其新的开源客户端，提供 Android 7+ 官方 APK。安装包体积可能超过 500 MB，推荐 Wi‑Fi 下载。",
+    "homepage": "https://github.com/ppy/osu",
+    "readmeUrl": "https://github.com/ppy/osu#readme",
+    "repository": "ppy/osu",
+    "preferredApkRegex": "^sh\\.ppy\\.osulazer\\.apk$",
+    "notice": "安装包约 500 MB；需要充足存储"
+  },
+  {
+    "name": "DroidDeck",
+    "category": "游戏与影音",
+    "summary": "在部分 Adreno 安卓掌机上运行 Steam 客户端与兼容 Windows 游戏。",
+    "readmeSnapshot": "官方 README：将 Steam Big Picture 与 ARM64 Proton 带到 Android；要求 Adreno 730+ 或 8xx，Adreno 6xx 实验性。Mali/MTK 等 GPU 不在支持范围，运行时需约 3GB 额外空间。",
+    "homepage": "https://github.com/Droid-Deck/DroidDeck",
+    "readmeUrl": "https://github.com/Droid-Deck/DroidDeck#readme",
+    "repository": "Droid-Deck/DroidDeck",
+    "preferredApkRegex": "^DroidDeck-[0-9][0-9.]*\\.apk$",
+    "notice": "仅适配特定 Adreno GPU；MTK/Mali 不支持"
+  },
+  {
+    "name": "FlClash",
+    "category": "网络与连接",
+    "summary": "跨平台网络代理客户端，方便管理个人网络配置。",
+    "readmeSnapshot": "FlClash 是 Flutter 实现的网络客户端，可按用户配置管理代理连接；本应用不会自动开启 VPN，也不会把 FlClash 作为下载前置依赖。",
+    "homepage": "https://github.com/chen08209/FlClash",
+    "readmeUrl": "https://github.com/chen08209/FlClash#readme",
+    "repository": "chen08209/FlClash"
+  },
+  {
+    "name": "LocalSend",
+    "category": "网络与连接",
+    "summary": "局域网内跨设备发送文件，无需注册账号。",
+    "readmeSnapshot": "LocalSend 为跨平台开源文件传输工具，设备在同一局域网内即可共享文件；支持 Android、桌面等平台。",
+    "homepage": "https://github.com/localsend/localsend",
+    "readmeUrl": "https://github.com/localsend/localsend#readme",
+    "repository": "localsend/localsend"
+  },
+  {
     "name": "Obtainium",
-    "category": "应用管理",
-    "selected": true,
+    "category": "应用与文件",
+    "summary": "直接从开源项目发布页获取 Android 应用更新。",
+    "readmeSnapshot": "Obtainium 从 GitHub 等开发者发布源跟踪应用版本，可管理非应用商店分发的开源 APK。",
     "homepage": "https://github.com/ImranR98/Obtainium",
+    "readmeUrl": "https://github.com/ImranR98/Obtainium#readme",
     "repository": "ImranR98/Obtainium"
   },
   {
     "name": "F-Droid",
-    "category": "应用商店",
-    "selected": false,
-    "homepage": "https://f-droid.org/"
+    "category": "应用与文件",
+    "summary": "提供自由与开源 Android 应用的应用商店。",
+    "readmeSnapshot": "F-Droid 是自由开源软件目录和分发平台，可浏览与安装由其仓库管理的 Android 应用。",
+    "homepage": "https://f-droid.org/",
+    "readmeUrl": "https://gitlab.com/fdroid/fdroidclient/-/blob/master/README.md",
+    "downloadMode": "external"
   },
   {
     "name": "Material Files",
-    "category": "文件管理",
-    "selected": true,
+    "category": "应用与文件",
+    "summary": "遵循 Material 风格设计的开源文件管理器。",
+    "readmeSnapshot": "Material Files 支持常见本地文件操作与存储访问，采用 Android Material 设计风格，适合替代简单文件管理器。",
     "homepage": "https://github.com/zhanghai/MaterialFiles",
+    "readmeUrl": "https://github.com/zhanghai/MaterialFiles#readme",
     "repository": "zhanghai/MaterialFiles"
   },
   {
-    "name": "LocalSend",
-    "category": "文件传输",
-    "selected": false,
-    "homepage": "https://localsend.org/",
-    "repository": "localsend/localsend"
+    "name": "Shizuku",
+    "category": "系统与调试",
+    "summary": "通过受控服务为兼容应用提供 Android 系统 API 访问能力。",
+    "readmeSnapshot": "Shizuku 允许应用通过其服务调用部分 Android 系统 API，使用前需要按官方说明授权及启动服务；不等同于 Root。",
+    "homepage": "https://github.com/RikkaApps/Shizuku",
+    "readmeUrl": "https://github.com/RikkaApps/Shizuku#readme",
+    "repository": "RikkaApps/Shizuku"
+  },
+  {
+    "name": "GhostLock",
+    "category": "高级与 Root",
+    "summary": "涉及 Android 内核漏洞利用的高风险实验项目。",
+    "readmeSnapshot": "该项目与 Android 内核提权相关，可能受固件、内核和安全补丁影响。仅提供原项目入口，不在本工具内自动下载执行提权载荷。",
+    "homepage": "https://github.com/YuKongA/ghostlock-app",
+    "readmeUrl": "https://github.com/YuKongA/ghostlock-app#readme",
+    "downloadMode": "external",
+    "risk": "high",
+    "notice": "高风险 · 仅原项目入口"
+  },
+  {
+    "name": "DirtyFrag",
+    "category": "高级与 Root",
+    "summary": "利用特定 Android 内核漏洞实现临时 Root 的研究工具。",
+    "readmeSnapshot": "项目 README：DirtyFrag 是 DFRoot 的衍生实现，Root 为临时状态，设备重启会失效；适配受内核版本与补丁影响，可能导致设备不稳定。",
+    "homepage": "https://github.com/mitschud/DirtyFrag",
+    "readmeUrl": "https://github.com/mitschud/DirtyFrag#readme",
+    "downloadMode": "external",
+    "risk": "high",
+    "notice": "高风险 · 需核对内核兼容性"
+  },
+  {
+    "name": "KSuRoot",
+    "category": "高级与 Root",
+    "summary": "围绕 KernelSU 和内核漏洞的高风险提权工具。",
+    "readmeSnapshot": "KSuRoot README：基于 GhostLock 相关漏洞与 KernelSU 工作流，提供不同厂商和内核适配方案；必须核对设备固件、补丁与支持列表，仅提供原仓库链接。",
+    "homepage": "https://github.com/hmascs/KSuRoot",
+    "readmeUrl": "https://github.com/hmascs/KSuRoot#readme",
+    "downloadMode": "external",
+    "risk": "high",
+    "notice": "高风险 · 仅原项目入口"
   }
 ]
