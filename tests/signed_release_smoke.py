@@ -106,8 +106,18 @@ try:
     check("Settings includes benchmark",bool(elements(root,"开始测速")))
     check("Settings includes mirrors",bool(elements(root,"智能优选")))
     screenshot("02_release_settings")
-    adb("shell","input","keyevent","4")
-    time.sleep(2)
+    # Prefer the visible Material 3 back control. Software-rendered Android
+    # emulators can lose a single key event during system animations.
+    for attempt in range(6):
+        root=dump("back-attempt-"+str(attempt))
+        if elements(root,"精选 Android 开源应用"):
+            break
+        back=elements(root,"返回应用列表")
+        if back:
+            tap(back[-1])
+        else:
+            adb("shell","input","keyevent","4")
+        time.sleep(2)
     root=dump("03_back_home")
     check("Back returns to catalog",bool(elements(root,"精选 Android 开源应用")))
     pid=adb("shell","pidof",PACKAGE,check=False).stdout.strip()
