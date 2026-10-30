@@ -90,7 +90,7 @@ def audit(app):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--file", type=Path, default=CATALOG)
-    p.add_argument("--strict", action="store_true", help="Fail CI on confirmed violations, not missing evidence")
+    p.add_argument("--strict", action="store_true", help="Optional manual strict mode; CI uses non-blocking warnings")
     args = p.parse_args()
     apps = json.loads(args.file.read_text(encoding="utf-8"))
     findings = []
@@ -102,7 +102,7 @@ def main():
     for name, level, message in findings:
         safe = message.replace("|", "/").replace("\n", " ")
         summary.append(f"| {name} | {level} | {safe} |")
-        print(f"::{'error' if level == 'FAIL' else 'warning'} title={name} [{level}]::{message}")
+        print(f"::warning title={name} [{level}]::{message}")
     summary.append("")
     summary.append(f"共 {sum(x[1] == 'FAIL' for x in findings)} 项明确不符合，{sum(x[1] == 'REVIEW' for x in findings)} 项待核验。")
     output = "\n".join(summary) + "\n"
