@@ -89,8 +89,19 @@ try:
     check("No old bottom navigation",not elements(root,"测速") and
           not elements(root,"关于"))
     screenshot("01_release_home")
-    setting=elements(root,"设置")
-    tap(setting[-1])
+    # Software-rendered CI emulators occasionally lose taps to a transient
+    # system overlay. Retry only while the catalog is still visible; never
+    # report settings as passed without seeing real settings controls.
+    for attempt in range(6):
+        root=dump("settings-attempt-"+str(attempt))
+        if elements(root,"开始测速") and elements(root,"智能优选"):
+            break
+        setting=elements(root,"设置")
+        if not setting:
+            time.sleep(2)
+            continue
+        tap(setting[-1])
+        time.sleep(2)
     root=dump("02_release_settings")
     check("Settings includes benchmark",bool(elements(root,"开始测速")))
     check("Settings includes mirrors",bool(elements(root,"智能优选")))

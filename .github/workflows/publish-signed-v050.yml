@@ -1,6 +1,7 @@
 name: Publish Signed Android v0.5.0
 
 # One-time gated release pipeline. Later releases use signed-release.yml.
+# Re-run signed Android 15 UI smoke after adding bounded settings navigation retry.
 on:
   push:
     branches: [main]
