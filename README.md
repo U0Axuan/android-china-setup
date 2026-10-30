@@ -50,4 +50,6 @@
 - 镜像仅在 GitHub 提供 SHA-256 时使用并校验；更新安装必须兼容签名。旧版 CI Debug 签名可能无法覆盖升级。
 - Android 11/15 自动化测试由 [GitHub Actions](https://github.com/U0Axuan/android-china-setup/actions) 执行，ARM64 真机与国内网络效果仍需验证。
 
+[查看 V0.5 Android 11 / 15 测试报告](docs/V0.5_TEST_REPORT.md)。
+
 项目代码使用 MIT License。第三方应用各自许可及商标归原权利人所有。
