@@ -9,7 +9,7 @@
 
 **[下载最新版 APK](https://github.com/U0Axuan/android-china-setup/releases/latest/download/Android-China-Setup.apk)** · [发布记录](https://github.com/U0Axuan/android-china-setup/releases) · [问题反馈](https://github.com/U0Axuan/android-china-setup/issues)
 
-> 下载地址永远指向 GitHub Latest Release。主分支的新版分类界面正在开发验证，**不等于已经发布到 Latest**。
+> **当前 Latest：v0.5.0（固定签名正式版）**。下载直链始终指向 GitHub Latest Release。v0.3/v0.4 使用临时 Debug 签名，初次升级到 v0.5.0 可能需要卸载旧版后重新安装，旧版应用设置可能丢失。
 
 ## 功能
 
