@@ -128,25 +128,37 @@ try:
     adb("shell","input","keyevent","4")
     time.sleep(2)
 
-    # Single LazyColumn with grouped sections and all 17 entries.
-    for category in ["日常与效率","游戏与影音","网络与连接",
-                     "应用与文件","系统与调试","高级与 Root"]:
-        find(category)
-        assert_check("Category "+category,True)
-    for name in ["osu! (lazer)","DroidDeck","Spotube","Canta","DirtyFrag","KSuRoot","LocalSend"]:
-        find(name)
-        assert_check("Catalog "+name,True)
+    # Scan one stable LazyColumn in a single pass instead of performing
+    # dozens of separate forward/backward searches (faster and less flaky).
+    categories=["日常与效率","游戏与影音","网络与连接",
+                "应用与文件","系统与调试","高级与 Root"]
+    projects=["osu! (lazer)","DroidDeck","Spotube","Canta",
+              "DirtyFrag","KSuRoot","LocalSend"]
+    seen_categories=set()
+    seen_projects=set()
+    for direction in (True,False):
+        for step in range(15):
+            screen=dump("scan_"+str(direction)+"_"+str(step))
+            seen_categories.update(c for c in categories if matches(screen,c))
+            seen_projects.update(p for p in projects if matches(screen,p))
+            if len(seen_categories)==len(categories) and len(seen_projects)==len(projects):
+                break
+            swipe(direction)
+        if len(seen_categories)==len(categories) and len(seen_projects)==len(projects):
+            break
+    for category in categories:
+        assert_check("Category "+category,category in seen_categories)
+    for name in projects:
+        assert_check("Catalog "+name,name in seen_projects)
     shot("03_catalog_bottom")
     click("KSuRoot")
-    root=dump("03_high_risk_sheet")
     assert_check("High-risk warning visible",
-        bool(matches(root,"高风险 · 仅原项目入口")))
+        find("高风险 · 仅原项目入口",attempts=7) is not None)
     assert_check("High risk README snapshot is accessible",
-        bool(matches(root,"README 快照")))
-    swipe(True)
-    root=dump("03_high_risk_sheet_bottom")
+        find("README 快照",attempts=7) is not None)
     assert_check("High risk root entry is informational",
-        bool(matches(root,"高风险系统工具仅展示原项目")))
+        find("高风险系统工具仅展示原项目",attempts=7) is not None)
+    root=dump("03_high_risk_sheet_bottom")
     assert_check("No exploit download action in risk sheet",
         not matches(root,"下载官方 APK"))
     shot("04_high_risk_readme")
