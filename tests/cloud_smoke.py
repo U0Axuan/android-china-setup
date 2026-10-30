@@ -205,7 +205,15 @@ try:
     assert_check("Proxy toggle exists",bool(toggles))
     toggle=min(toggles,key=lambda n:abs((bounds(n)[1]+bounds(n)[3])//2-row_y))
     tap(toggle)
-    assert_check("Proxy details shown",bool(matches(dump("09_proxy_on"),"代理主机/IP")))
+    # In the expanded settings card the host field may lie below the screen;
+    # an absent UIAutomator node does not mean the Switch failed.
+    switched=dump("09_proxy_on")
+    near=[n for n in switched.iter("node") if n.attrib.get("checkable")=="true"
+          and n.attrib.get("checked")=="true" and
+          abs((bounds(n)[1]+bounds(n)[3])//2-row_y)<140]
+    assert_check("Proxy switch enabled",bool(near))
+    host_field=find("代理主机/IP",attempts=8)
+    assert_check("Proxy details shown",host_field is not None)
     click("SOCKS5")
     assert_check("SOCKS5 persisted","SOCKS5" in pref())
     shot("09_proxy_settings")
