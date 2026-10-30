@@ -1,5 +1,7 @@
 name: Verify Android Release Signing
 
+# Revalidate after the owner configured four protected GitHub Actions secrets.
+
 on:
   push:
     branches: [main]
