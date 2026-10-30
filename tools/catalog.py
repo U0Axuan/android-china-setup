@@ -28,6 +28,13 @@ ALLOWED = {
 }
 LIMIT_BYTES = 256 * 1024
 
+def valid_repo(repo):
+    if not REPOSITORY.fullmatch(repo):
+        return False
+    parts = repo.split("/")
+    return all(part not in (".", "..") and not part.startswith("-")
+               for part in parts)
+
 def is_https(value):
     if not isinstance(value, str) or len(value) > 1000:
         return False
@@ -66,7 +73,7 @@ def validate(data):
             if not is_https(app.get(field)):
                 raise ValueError(f"{name} 的 {field} 不是合法 HTTPS URL")
         repo = app.get("repository", "")
-        if not isinstance(repo, str) or (repo and not REPOSITORY.fullmatch(repo)):
+        if not isinstance(repo, str) or (repo and not valid_repo(repo)):
             raise ValueError(f"{name} 的 GitHub 仓库名无效")
         mode = app.get("downloadMode", "auto")
         risk = app.get("risk", "")
@@ -104,7 +111,7 @@ def add(data, args):
     if any(item["name"] == args.name for item in data):
         raise ValueError(f"项目已经存在: {args.name}")
     repo = args.repo or ""
-    if repo and not REPOSITORY.fullmatch(repo):
+    if repo and not valid_repo(repo):
         raise ValueError("请使用 owner/repo 格式的 GitHub 仓库名")
     homepage = args.homepage or (f"https://github.com/{repo}" if repo else "")
     readme = args.readme_url or (homepage + "#readme" if repo else homepage)

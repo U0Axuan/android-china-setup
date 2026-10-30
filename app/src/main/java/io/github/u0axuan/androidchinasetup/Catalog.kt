@@ -92,7 +92,8 @@ object Catalog {
                 app.readmeSnapshot.isNotBlank() && app.readmeSnapshot.length <= 900 &&
                 app.notice.length <= 200 &&
                 validHttps(app.homepage) && validHttps(app.readmeUrl) &&
-                (app.repository.isBlank() || repoPattern.matches(app.repository)) &&
+                (app.repository.isBlank() || (repoPattern.matches(app.repository) &&
+                    app.repository.split("/").all { it != "." && it != ".." && !it.startsWith("-") })) &&
                 app.downloadMode in setOf("auto", "external") &&
                 app.risk in setOf("", "caution", "high") &&
                 app.preferredApkRegex.length <= 160 &&
