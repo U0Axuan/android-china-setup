@@ -1,0 +1,60 @@
+name: Verify Android Release Signing
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/check-signing.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      KEYSTORE_B64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_B64 }}
+      STORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}
+      KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
+      KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Check presence of four signing secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=()
+          for variable in KEYSTORE_B64 STORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [[ -z "${!variable:-}" ]]; then
+              case "$variable" in
+                KEYSTORE_B64) missing+=("ANDROID_RELEASE_KEYSTORE_B64") ;;
+                STORE_PASSWORD) missing+=("ANDROID_RELEASE_STORE_PASSWORD") ;;
+                KEY_ALIAS) missing+=("ANDROID_RELEASE_KEY_ALIAS") ;;
+                KEY_PASSWORD) missing+=("ANDROID_RELEASE_KEY_PASSWORD") ;;
+              esac
+            fi
+          done
+          if (( ${#missing[@]} )); then
+            printf "Missing signing secret: %s\n" "${missing[@]}"
+            exit 1
+          fi
+          echo "All four signing secrets are present. Contents are not displayed."
+      - name: Validate JKS, alias, keystore password and private-key password
+        shell: bash
+        run: |
+          set -euo pipefail
+          key_path="$RUNNER_TEMP/android-china-setup-signing.jks"
+          csr_path="$RUNNER_TEMP/signing-probe.csr"
+          trap 'rm -f "$key_path" "$csr_path"' EXIT
+          umask 077
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > "$key_path"
+          test -s "$key_path"
+          keytool -list -keystore "$key_path" -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
+          keytool -certreq -keystore "$key_path" -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" -keypass "$KEY_PASSWORD" -file "$csr_path" >/dev/null
+          test -s "$csr_path"
+          echo "Signing JKS / alias / keystore password / private-key password verified."
