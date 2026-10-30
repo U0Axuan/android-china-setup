@@ -80,7 +80,7 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$apk" | tee /tmp/signed-apk-info.txt
           grep -F "package: name='io.github.u0axuan.androidchinasetup'" /tmp/signed-apk-info.txt
           grep -F "versionCode='6'" /tmp/signed-apk-info.txt
-          grep -F "versionName='0.5.0'" /tmp/signed-apk-info.txt
+          grep -F "versionName='0.6.0'" /tmp/signed-apk-info.txt
           grep -F "sdkVersion:'30'" /tmp/signed-apk-info.txt
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$apk"
           mkdir -p dist
@@ -178,7 +178,7 @@ jobs:
           set -euo pipefail
           test -s dist/Android-China-Setup.apk
           (cd dist && sha256sum -c SHA256SUMS.txt)
-          grep -F 'versionName = "0.5.0"' app/build.gradle.kts
+          grep -F 'versionName = "0.6.0"' app/build.gradle.kts
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release tag already exists; never overwrite a published APK."
             exit 1
