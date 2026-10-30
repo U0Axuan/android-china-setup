@@ -6,6 +6,7 @@ on:
     paths:
       - 'catalog/apps.json'
       - 'tools/catalog.py'
+      - 'tools/catalog_audit.py'
       - '.github/workflows/catalog-validate.yml'
   pull_request:
     paths:
@@ -28,5 +29,9 @@ jobs:
         run: python3 tools/catalog.py validate
       - name: Exercise fast-add CLI and invalid metadata rejection
         run: python3 tools/catalog.py selftest
+      - name: Audit open-source, release, activity and security evidence
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 tools/catalog_audit.py --strict
       - name: Confirm no Android build is needed
         run: echo "Catalog-only commits are handled as JSON data; no Gradle, SDK, emulator or APK signing required."
