@@ -66,7 +66,7 @@
     "readmeUrl": "https://github.com/team-spotube/spotube#readme",
     "repository": "team-spotube/spotube",
     "preferredApkRegex": "^Spotube-android-all-arch\\.apk$",
-    "notice": "音源依赖插件及网络环境；安装包约 128 MB"
+    "notice": "音源可用性受地区和插件影响；请预留足够存储空间"
   },
   {
     "name": "FlClash",
