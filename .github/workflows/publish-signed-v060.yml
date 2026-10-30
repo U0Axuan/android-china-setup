@@ -1,0 +1,199 @@
+name: Publish Signed Android v0.6.0
+
+# One-time gated release of the first data-driven catalog version.
+# Uses existing fixed signing secrets and refuses a different certificate.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-signed-v060.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-signed-v0.6.0
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and verify stable-signed APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      KEYSTORE_B64: ${{ secrets.ANDROID_RELEASE_KEYSTORE_B64 }}
+      ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_STORE_PASSWORD }}
+      ANDROID_SIGNING_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
+      ANDROID_SIGNING_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Confirm four protected signing secrets are configured
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$KEYSTORE_B64"
+          test -n "$ANDROID_SIGNING_STORE_PASSWORD"
+          test -n "$ANDROID_SIGNING_KEY_ALIAS"
+          test -n "$ANDROID_SIGNING_KEY_PASSWORD"
+      - name: Decode protected JKS into temporary private file
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          printf %s "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/android-china-setup-stable.jks"
+          chmod 600 "$RUNNER_TEMP/android-china-setup-stable.jks"
+          echo "ANDROID_SIGNING_STORE_FILE=$RUNNER_TEMP/android-china-setup-stable.jks" >> "$GITHUB_ENV"
+      - name: Verify current signing certificate matches provided alias
+        shell: bash
+        run: |
+          set -euo pipefail
+          keytool -list -keystore "$ANDROID_SIGNING_STORE_FILE" \
+            -storepass "$ANDROID_SIGNING_STORE_PASSWORD" \
+            -alias "$ANDROID_SIGNING_KEY_ALIAS" >/dev/null
+      - name: Prepare Android SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER" ]; then
+            SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | sort -V | tail -n1)"
+          fi
+          test -n "$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Run unit tests and build release APK with stable signature
+        run: gradle :app:testDebugUnitTest :app:assembleRelease --stacktrace
+      - name: Verify APK identity, minimum Android, and cryptographic signature
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk=app/build/outputs/apk/release/app-release.apk
+          test -s "$apk"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$apk" | tee /tmp/signed-apk-info.txt
+          grep -F "package: name='io.github.u0axuan.androidchinasetup'" /tmp/signed-apk-info.txt
+          grep -F "versionCode='6'" /tmp/signed-apk-info.txt
+          grep -F "versionName='0.5.0'" /tmp/signed-apk-info.txt
+          grep -F "sdkVersion:'30'" /tmp/signed-apk-info.txt
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$apk"
+          mkdir -p dist
+          cp "$apk" dist/Android-China-Setup.apk
+          (cd dist && sha256sum Android-China-Setup.apk > SHA256SUMS.txt)
+          echo "Saved signed APK and SHA256SUMS.txt"
+          cat dist/SHA256SUMS.txt
+      - name: Enforce same signing identity as v0.5.0
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk=dist/Android-China-Setup.apk
+          fingerprint="$("$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs "$apk" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | tr '[:upper:]' '[:lower:]' | tr -d '\r')"
+          expected="aea1a8e0a9ea81585425e17cbc5c433a2eb334206e4f9a8cbdeefbd74d0e3c57"
+          if [[ "$fingerprint" != "$expected" ]]; then
+            echo "::error::Signing certificate differs from v0.5.0. Refusing upgrade-breaking release."
+            exit 1
+          fi
+          echo "Signing fingerprint matches v0.5.0 release identity."
+      - name: Upload verified signed APK candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-v0.6.0-candidate
+          path: dist/
+          if-no-files-found: error
+      - name: Delete transient signing file
+        if: always()
+        run: rm -f "$RUNNER_TEMP/android-china-setup-stable.jks"
+
+  emulator:
+    name: Signed-release Android API ${{ matrix.api-level }} smoke
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        api-level: [30, 35]
+    env:
+      EXPECTED_API: ${{ matrix.api-level }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/download-artifact@v4
+        with:
+          name: signed-v0.6.0-candidate
+          path: dist/
+      - name: Enable hardware virtualization
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Install and exercise signed release APK
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          ram-size: 4096M
+          heap-size: 512M
+          disk-size: 6G
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: python3 tests/signed_release_smoke.py
+      - name: Upload signed release simulator screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-v060-smoke-api${{ matrix.api-level }}
+          path: test-results/signed-release/
+          if-no-files-found: warn
+
+  publish:
+    name: Publish signed APK as GitHub Latest
+    needs: [build, emulator]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: v0.6.0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: signed-v0.6.0-candidate
+          path: dist/
+      - name: Confirm release version, checksums, and no earlier tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s dist/Android-China-Setup.apk
+          (cd dist && sha256sum -c SHA256SUMS.txt)
+          grep -F 'versionName = "0.5.0"' app/build.gradle.kts
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release tag already exists; never overwrite a published APK."
+            exit 1
+          fi
+          test "$(git rev-parse HEAD)" = "$(git ls-remote origin refs/heads/main | cut -f1)"
+      - name: Publish v0.6.0 and set Latest
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" \
+            dist/Android-China-Setup.apk \
+            dist/SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Android China Setup v0.6.0 · 固定签名正式版" \
+            --notes-file docs/RELEASE_NOTES_v0.6.0.md \
+            --latest
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json url,tagName,isPrerelease,assets

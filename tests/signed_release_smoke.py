@@ -84,7 +84,7 @@ try:
         adb("shell","am","start","-n",PACKAGE+"/.MainActivity",check=False)
     check("Non-debuggable signed app launches",root is not None and
           bool(elements(root,"精选 Android 开源应用")))
-    check("15 catalog projects shown",bool(elements(root,"15 个项目")))
+    check("17 catalog projects shown",bool(elements(root,"17 个项目")))
     check("Settings accessible from top right",bool(elements(root,"设置")))
     check("No old bottom navigation",not elements(root,"测速") and
           not elements(root,"关于"))
@@ -104,6 +104,7 @@ try:
         time.sleep(2)
     root=dump("02_release_settings")
     check("Settings includes benchmark",bool(elements(root,"开始测速")))
+    check("Settings includes online catalog refresh",bool(elements(root,"刷新应用目录")))
     check("Settings includes mirrors",bool(elements(root,"智能优选")))
     screenshot("02_release_settings")
     # Prefer the visible Material 3 back control. Software-rendered Android

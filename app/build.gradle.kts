@@ -12,7 +12,7 @@ android {
         minSdk = 30
         targetSdk = 35
         versionCode = 6
-        versionName = "0.6.0-dev"
+        versionName = "0.6.0"
     }
     // Optional stable release signing. Credentials and keystore are CI secrets,
     // never checked into the public repository.
