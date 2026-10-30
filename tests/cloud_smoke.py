@@ -139,6 +139,12 @@ try:
     shot("03_catalog_bottom")
     click("KSuRoot")
     root=dump("03_high_risk_sheet")
+    assert_check("High-risk warning visible",
+        bool(matches(root,"高风险 · 仅原项目入口")))
+    assert_check("High risk README snapshot is accessible",
+        bool(matches(root,"README 快照")))
+    swipe(True)
+    root=dump("03_high_risk_sheet_bottom")
     assert_check("High risk root entry is informational",
         bool(matches(root,"高风险系统工具仅展示原项目")))
     assert_check("No exploit download action in risk sheet",
