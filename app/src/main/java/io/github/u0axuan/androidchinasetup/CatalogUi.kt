@@ -1,6 +1,7 @@
 package io.github.u0axuan.androidchinasetup
 
 import android.os.Build
+import coil.compose.AsyncImage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -50,7 +51,7 @@ fun AndroidChinaTheme(content: @Composable () -> Unit) {
 @Composable
 fun CatalogHome(
     apps: List<CatalogApp>, busy: Boolean, status: String, percent: Int,
-    ready: Boolean, onInstall: () -> Unit,
+    ready: Boolean, metadata: Map<String, UpstreamInfo>, onInstall: () -> Unit,
     onDetails: (CatalogApp) -> Unit, onDownload: (CatalogApp) -> Unit
 ) {
     val groups = remember(apps) { Catalog.grouped(apps) }
@@ -104,7 +105,7 @@ fun CatalogHome(
                 }
             }
             items(entries, key = { it.name }, contentType = { "app" }) { app ->
-                CatalogRow(app, busy, onDetails, onDownload)
+                CatalogRow(app, busy, metadata[app.repository], onDetails, onDownload)
             }
         }
     }
@@ -112,7 +113,7 @@ fun CatalogHome(
 
 @Composable
 private fun CatalogRow(
-    app: CatalogApp, busy: Boolean,
+    app: CatalogApp, busy: Boolean, upstream: UpstreamInfo?,
     onDetails: (CatalogApp) -> Unit, onDownload: (CatalogApp) -> Unit
 ) {
     Surface(
@@ -130,17 +131,24 @@ private fun CatalogRow(
                     else MaterialTheme.colorScheme.secondaryContainer),
                 contentAlignment = Alignment.Center
             ) {
-                Text(app.name.take(1), style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = if (app.risk == "high")
-                        MaterialTheme.colorScheme.onErrorContainer
-                    else MaterialTheme.colorScheme.onSecondaryContainer)
+                if (!upstream?.logo.isNullOrBlank()) {
+                    AsyncImage(model = upstream?.logo, contentDescription = app.name + " 原项目标识",
+                        modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)))
+                } else {
+                    Text(app.name.take(1), style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = if (app.risk == "high")
+                            MaterialTheme.colorScheme.onErrorContainer
+                        else MaterialTheme.colorScheme.onSecondaryContainer)
+                }
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(app.name, style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold, maxLines = 1,
                     overflow = TextOverflow.Ellipsis)
+                upstream?.stars?.let { Text("★ " + it.toString() + " GitHub Stars", style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary) }
                 Text(app.summary, style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -164,7 +172,7 @@ private fun CatalogRow(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CatalogDetail(
-    app: CatalogApp, busy: Boolean,
+    app: CatalogApp, busy: Boolean, upstream: UpstreamInfo?,
     onDismiss: () -> Unit, onDownload: (CatalogApp) -> Unit,
     openUrl: (String) -> Unit
 ) {
@@ -179,6 +187,10 @@ fun CatalogDetail(
             Text(app.name, style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold)
             Text(app.summary, style = MaterialTheme.typography.bodyLarge)
+            upstream?.stars?.let {
+                Text("★ $it GitHub Stars", style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary)
+            }
             if (app.notice.isNotBlank()) {
                 Text(app.notice, style = MaterialTheme.typography.bodySmall,
                     color = if (app.risk == "high") MaterialTheme.colorScheme.error
@@ -186,16 +198,18 @@ fun CatalogDetail(
             }
             HorizontalDivider()
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("README 快照", style = MaterialTheme.typography.titleMedium,
+                Text(if (upstream?.readme.isNullOrBlank()) "README 快照" else "原作者 README",
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.width(8.dp))
-                Text("内置摘要 · 非实时全文",
+                Text(if (upstream?.readme.isNullOrBlank()) "离线摘要" else "GitHub 原文 · 缓存",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Surface(shape = MaterialTheme.shapes.medium,
                 color = MaterialTheme.colorScheme.surfaceContainerLow) {
-                Text(app.readmeSnapshot, Modifier.fillMaxWidth().padding(16.dp),
+                Text(upstream?.readme?.takeIf { it.isNotBlank() } ?: app.readmeSnapshot,
+                    Modifier.fillMaxWidth().padding(16.dp),
                     style = MaterialTheme.typography.bodyMedium)
             }
             OutlinedButton(onClick = { openUrl(app.readmeUrl) },
