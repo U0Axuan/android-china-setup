@@ -210,12 +210,15 @@ class MainActivity : ComponentActivity() {
                     }
                     runOnUiThread { speedText = "正在测试各节点…" }
                     var passed = 0
+                    val measured = mutableMapOf<String, ProbeResult>()
                     benchmark.test(asset, net, source) { result ->
+                        measured[result.id] = result
                         if (result.latencyMs != null) passed++
                         runOnUiThread { probes = probes + (result.id to result) }
                     }
+                    downloader.rememberBenchmark(asset, net, source, measured)
                     runOnUiThread {
-                        speedText = "测速完成：$passed 个节点可用；速率为短时样本估算"
+                        speedText = "测速完成：$passed 个节点可用；已缓存结果，后续下载不再自动测速"
                         speedBusy = false
                     }
                 } catch (e: Exception) {
