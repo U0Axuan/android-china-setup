@@ -85,7 +85,7 @@ class UpstreamRepository(private val context: Context) {
                     .take(48000)
             }.getOrDefault("")
             if (markdown.isNotBlank()) {
-                if (includeReadme) readme = markdown
+                readme = markdown
                 val detected = originalLogo(markdown, repo, branch)
                 if (detected.isNotBlank()) logo = detected
             }
