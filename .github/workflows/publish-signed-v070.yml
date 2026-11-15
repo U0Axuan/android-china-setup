@@ -1,6 +1,6 @@
 name: Publish Signed Android v0.7.0
 
-# One-time gated release of the v0.7.0 metadata and mirror registry release.
+# One-time gated release of v0.7.0 after actual emulator UI interaction checks.
 # Uses existing fixed signing secrets and refuses a different certificate.
 on:
   push:
