@@ -153,7 +153,10 @@ class ApkDownloader(private val context: Context) {
     }
 
     private fun speedCacheKey(candidates: List<SourceChoice>, options: NetworkOptions): String =
-        (candidates.joinToString("|") { it.id + ":" + it.url.substringBefore("/https://") } +
+        (candidates.joinToString("|") {
+            it.id + ":" + if (it.id == DownloadSources.OFFICIAL) "https://github.com"
+                else it.url.substringBefore("/https://")
+        } +
             "|" + options.proxyEnabled + "|" + options.proxyType + "|" +
             options.proxyHost + ":" + options.proxyPort).hashCode().toString()
 
