@@ -196,6 +196,10 @@ fun CatalogDetail(
                     color = if (app.risk == "high") MaterialTheme.colorScheme.error
                             else MaterialTheme.colorScheme.onSurfaceVariant)
             }
+            OutlinedButton(onClick = { openUrl(app.readmeUrl) },
+                modifier = Modifier.fillMaxWidth()) { Text("阅读原项目 README 全文") }
+            OutlinedButton(onClick = { openUrl(app.homepage) },
+                modifier = Modifier.fillMaxWidth()) { Text("访问原项目") }
             HorizontalDivider()
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(if (upstream?.readme.isNullOrBlank()) "README 快照" else "原作者 README",
@@ -212,10 +216,6 @@ fun CatalogDetail(
                     Modifier.fillMaxWidth().padding(16.dp),
                     style = MaterialTheme.typography.bodyMedium)
             }
-            OutlinedButton(onClick = { openUrl(app.readmeUrl) },
-                modifier = Modifier.fillMaxWidth()) { Text("阅读原项目 README 全文") }
-            OutlinedButton(onClick = { openUrl(app.homepage) },
-                modifier = Modifier.fillMaxWidth()) { Text("访问原项目") }
             if (app.canDownload) {
                 Button(onClick = { onDownload(app) }, enabled = !busy,
                     modifier = Modifier.fillMaxWidth()) { Text("下载官方 APK") }
