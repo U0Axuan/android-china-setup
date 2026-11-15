@@ -34,9 +34,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val bundled = runCatching { Catalog.read(this) }.getOrDefault(emptyList())
         val apps = CatalogRepository.load(this, bundled)
+        MirrorRegistry.load(this)
+        Thread { runCatching { MirrorRegistry.refreshDaily(this) } }.start()
         val prefs = getSharedPreferences("preferences", MODE_PRIVATE)
         @Suppress("DEPRECATION")
-        val version = packageManager.getPackageInfo(packageName, 0).versionName ?: "0.6.0-dev"
+        val version = packageManager.getPackageInfo(packageName, 0).versionName ?: "0.7.0-dev"
         setContent {
             AndroidChinaTheme {
                 AppRoot(apps, prefs, version)
@@ -52,16 +54,19 @@ class MainActivity : ComponentActivity() {
         var metadata by remember { mutableStateOf(initialApps.filter { it.repository.isNotBlank() }
             .associate { it.repository to upstream.cached(it.repository) }) }
         val metadataPending = remember { mutableSetOf<String>() }
+        val metadataSemaphore = remember { java.util.concurrent.Semaphore(4) }
         fun loadMetadata(repository: String, readme: Boolean = false) {
             if (repository.isBlank() || (!readme && !upstream.isStale(repository))) return
             synchronized(metadataPending) {
                 if (!metadataPending.add(repository)) return
             }
             Thread {
+                metadataSemaphore.acquireUninterruptibly()
                 try {
                     val result = upstream.update(repository, readme)
                     runOnUiThread { metadata = metadata + (repository to result) }
                 } finally {
+                    metadataSemaphore.release()
                     synchronized(metadataPending) { metadataPending.remove(repository) }
                 }
             }.start()
