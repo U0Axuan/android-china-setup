@@ -64,7 +64,8 @@ fun SettingsPage(
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 30.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp,
+            bottom = if (downloadSettingsOpen) 420.dp else 30.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item(key = "settings-title") {
