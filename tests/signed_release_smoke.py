@@ -84,7 +84,7 @@ try:
         adb("shell","am","start","-n",PACKAGE+"/.MainActivity",check=False)
     check("Non-debuggable signed app launches",root is not None and
           bool(elements(root,"精选 Android 开源应用")))
-    check("17 catalog projects shown",bool(elements(root,"17 个项目")))
+    check("23 catalog projects shown",bool(elements(root,"23 个项目")))
     check("Settings accessible from top right",bool(elements(root,"设置")))
     check("No old bottom navigation",not elements(root,"测速") and
           not elements(root,"关于"))
@@ -94,7 +94,7 @@ try:
     # report settings as passed without seeing real settings controls.
     for attempt in range(6):
         root=dump("settings-attempt-"+str(attempt))
-        if elements(root,"开始测速") and elements(root,"智能优选"):
+        if elements(root,"刷新应用目录") and elements(root,"进入下载与测速"):
             break
         setting=elements(root,"设置")
         if not setting:
@@ -103,10 +103,20 @@ try:
         tap(setting[-1])
         time.sleep(2)
     root=dump("02_release_settings")
-    check("Settings includes benchmark",bool(elements(root,"开始测速")))
+    check("Settings shows second-level download controls",bool(elements(root,"进入下载与测速")))
     check("Settings includes online catalog refresh",bool(elements(root,"刷新应用目录")))
-    check("Settings includes mirrors",bool(elements(root,"智能优选")))
+    check("GitHub recommendation entry present",bool(elements(root,"提交应用推荐")))
     screenshot("02_release_settings")
+    menu=elements(root,"进入下载与测速")
+    if menu:
+        tap(menu[0])
+    root=dump("02_download_submenu")
+    check("Benchmark appears in secondary menu",bool(elements(root,"开始测速")))
+    check("Mirrors appear in secondary menu",bool(elements(root,"智能优选")))
+    screenshot("02_download_submenu")
+    back_menu=elements(root,"返回设置")
+    if back_menu:
+        tap(back_menu[0])
     # Prefer the visible Material 3 back control. Software-rendered Android
     # emulators can lose a single key event during system animations.
     for attempt in range(6):
