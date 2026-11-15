@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Android China Setup V0.6 emulator UI smoke checks (API 30 and 35).
+"""Android China Setup V0.7 emulator UI smoke checks (API 30 and 35).
 
 Offline catalog & settings are exercised end-to-end; external APK download
 is optional since public GitHub network can be throttled on cloud runners.
@@ -109,7 +109,7 @@ try:
         adb("shell","am","start","-n",PACKAGE+"/.MainActivity")
     assert_check("App launched",bool(matches(root,"Android China Setup")))
     assert_check("Category index visible",bool(matches(root,"精选 Android 开源应用")))
-    assert_check("Catalog item count visible",bool(matches(root,"17 个项目")))
+    assert_check("Catalog item count visible",bool(matches(root,"23 个项目")))
     assert_check("Settings entry in top bar",bool(matches(root,"设置",True)))
     assert_check("No bottom navigation",not matches(root,"测速",True) and
         not matches(root,"关于",True))
@@ -120,8 +120,8 @@ try:
     # Browse first detail: compact readme snapshot and canonical project links.
     click("曦码输入法")
     root=dump("02_readme_sheet")
-    assert_check("README snapshot displayed",bool(matches(root,"README 快照")))
-    assert_check("README snapshot is clearly offline",bool(matches(root,"内置摘要")))
+    assert_check("Upstream README area displayed",bool(matches(root,"README")))
+    assert_check("README is cached or offline",bool(matches(root,"离线摘要")) or bool(matches(root,"GitHub 原文")))
     assert_check("Original README link",bool(matches(root,"阅读原项目 README 全文")))
     assert_check("Original project link",bool(matches(root,"访问原项目",True)))
     shot("02_readme_snapshot")
@@ -132,7 +132,7 @@ try:
     # dozens of separate forward/backward searches (faster and less flaky).
     categories=["日常与效率","游戏与影音","网络与连接",
                 "应用与文件","系统与调试","高级与 Root"]
-    projects=["osu! (lazer)","DroidDeck","Spotube","Canta",
+    projects=["osu! (lazer)","DroidDeck","TagMacro","Canta",
               "DirtyFrag","KSuRoot","LocalSend"]
     seen_categories=set()
     seen_projects=set()
@@ -154,8 +154,8 @@ try:
     click("KSuRoot")
     assert_check("High-risk warning visible",
         find("高风险 · 仅原项目入口",attempts=7) is not None)
-    assert_check("High risk README snapshot is accessible",
-        find("README 快照",attempts=7) is not None)
+    assert_check("High risk README is accessible",
+        find("README",attempts=7) is not None)
     assert_check("High risk root entry is informational",
         find("高风险系统工具仅展示原项目",attempts=7) is not None)
     root=dump("03_high_risk_sheet_bottom")
@@ -177,11 +177,13 @@ try:
     # The only settings entry is in the top-right bar.
     click("设置",True)
     root=dump("06_settings")
-    assert_check("Settings opened",bool(matches(root,"下载加速与测速")))
+    assert_check("Settings opened",bool(matches(root,"进入下载与测速")))
     assert_check("Online catalog controls shown",bool(matches(root,"刷新应用目录")))
-    assert_check("Online catalog count shown",bool(matches(root,"已收录 17 个开源项目")))
-    assert_check("Speed test integrated",bool(matches(root,"开始测速")))
-    assert_check("Auto mirror selector",bool(matches(root,"智能优选")))
+    assert_check("Online catalog count shown",bool(matches(root,"已收录 23 个开源项目")))
+    assert_check("Recommendation issue entry",bool(matches(root,"提交应用推荐")))
+    click("进入下载与测速")
+    assert_check("Speed test in secondary menu",bool(matches(dump("06_download_menu"),"开始测速")))
+    assert_check("Auto mirror selector",bool(matches(dump("06_mirrors"),"智能优选")))
     shot("06_settings_speed")
     for name in ["GHFast","GH-Proxy","LLKK","GHProxy.net"]:
         find(name)
@@ -260,6 +262,7 @@ try:
     assert_check("SOCKS5 persisted","SOCKS5" in pref())
     shot("09_proxy_settings")
 
+    click("返回设置")
     find("关于与自更新")
     assert_check("About and update integrated",True)
     find("检查更新")
