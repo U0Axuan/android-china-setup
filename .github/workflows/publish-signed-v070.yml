@@ -82,7 +82,7 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$apk" | tee /tmp/signed-apk-info.txt
           grep -F "package: name='io.github.u0axuan.androidchinasetup'" /tmp/signed-apk-info.txt
           grep -F "versionCode='7'" /tmp/signed-apk-info.txt
-          grep -F "versionName='0.6.0'" /tmp/signed-apk-info.txt
+          grep -F "versionName='0.7.0'" /tmp/signed-apk-info.txt
           grep -F "sdkVersion:'30'" /tmp/signed-apk-info.txt
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$apk"
           mkdir -p dist
@@ -90,7 +90,7 @@ jobs:
           (cd dist && sha256sum Android-China-Setup.apk > SHA256SUMS.txt)
           echo "Saved signed APK and SHA256SUMS.txt"
           cat dist/SHA256SUMS.txt
-      - name: Enforce same signing identity as v0.6.0
+      - name: Enforce same signing identity as v0.7.0
         shell: bash
         run: |
           set -euo pipefail
@@ -98,10 +98,10 @@ jobs:
           fingerprint="$("$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs "$apk" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | tr '[:upper:]' '[:lower:]' | tr -d '\r')"
           expected="aea1a8e0a9ea81585425e17cbc5c433a2eb334206e4f9a8cbdeefbd74d0e3c57"
           if [[ "$fingerprint" != "$expected" ]]; then
-            echo "::error::Signing certificate differs from v0.5.0. Refusing upgrade-breaking release."
+            echo "::error::Signing certificate differs from established stable signer. Refusing upgrade-breaking release."
             exit 1
           fi
-          echo "Signing fingerprint matches v0.6.0 release identity."
+          echo "Signing fingerprint matches v0.7.0 release identity."
       - name: Upload verified signed APK candidate
         uses: actions/upload-artifact@v4
         with:
@@ -180,7 +180,7 @@ jobs:
           set -euo pipefail
           test -s dist/Android-China-Setup.apk
           (cd dist && sha256sum -c SHA256SUMS.txt)
-          grep -F 'versionName = "0.6.0"' app/build.gradle.kts
+          grep -F 'versionName = "0.7.0"' app/build.gradle.kts
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release tag already exists; never overwrite a published APK."
             exit 1
