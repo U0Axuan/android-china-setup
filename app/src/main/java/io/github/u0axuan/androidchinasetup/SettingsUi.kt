@@ -56,6 +56,7 @@ fun SettingsPage(
     var customName by remember { mutableStateOf("") }
     var customPrefix by remember { mutableStateOf("") }
     var addNotice by remember { mutableStateOf("") }
+    var downloadSettingsOpen by remember { mutableStateOf(false) }
     val available = DownloadSources.presets + model.customSources
     val newer = model.newVersion?.takeIf {
         SelfUpdater.isNewer(it.version, model.version)
@@ -68,12 +69,16 @@ fun SettingsPage(
     ) {
         item(key = "settings-title") {
             Column(Modifier.padding(bottom = 6.dp)) {
-                Text("设置", style = MaterialTheme.typography.headlineSmall)
-                Text("下载源、测速、代理与版本更新",
+                Text(if (downloadSettingsOpen) "下载与测速" else "设置", style = MaterialTheme.typography.headlineSmall)
+                if (downloadSettingsOpen) {
+                    OutlinedButton(onClick = { downloadSettingsOpen = false }) { Text("返回设置") }
+                }
+                Text(if (downloadSettingsOpen) "下载源、镜像测速与网络代理" else "应用目录、下载管理与更新",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
+        if (!downloadSettingsOpen) {
         item(key = "catalog-refresh") {
             SettingsPanel("应用目录") {
                 Text("已收录 ${model.catalogCount} 个开源项目",
@@ -90,6 +95,22 @@ fun SettingsPage(
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
+        item(key = "downloads-menu") {
+            SettingsPanel("下载与测速") {
+                Text("加速源、节点测速、自定义镜像与代理设置", style = MaterialTheme.typography.bodySmall)
+                Button(onClick = { downloadSettingsOpen = true }, modifier = Modifier.fillMaxWidth()) { Text("进入下载与测速") }
+            }
+        }
+        item(key = "recommend-app") {
+            SettingsPanel("推荐开源应用") {
+                Text("欢迎提交原作者开源项目。必须登录 GitHub，填写原始 GitHub 仓库地址，并提供许可证、发行记录、最近维护及安全检查依据。", style = MaterialTheme.typography.bodySmall)
+                Button(onClick = {
+                    openUrl("https://github.com/U0Axuan/android-china-setup/issues/new?template=app-recommendation.yml")
+                }, modifier = Modifier.fillMaxWidth()) { Text("登录 GitHub · 提交应用推荐") }
+            }
+        }
+        }
+        if (downloadSettingsOpen) {
         item(key = "speed-card") {
             SettingsPanel("下载加速与测速") {
                 Text("测速从 GitHub Release 读取样本，显示连接延迟及约 128 KB 采样速率。",
@@ -200,6 +221,8 @@ fun SettingsPage(
                 }
             }
         }
+        }
+        if (!downloadSettingsOpen) {
         item(key = "about") {
             SettingsPanel("关于与自更新") {
                 Text("Android China Setup v" + model.version)
@@ -247,6 +270,7 @@ fun SettingsPage(
                     openUrl(SelfUpdater.PROJECT_URL + "/issues/new")
                 }) { Text("反馈问题 / 推荐应用") }
             }
+        }
         }
     }
 }
