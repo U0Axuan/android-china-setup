@@ -6,25 +6,25 @@
 
 [![Latest](https://img.shields.io/github/v/release/U0Axuan/android-china-setup?label=Latest)](https://github.com/U0Axuan/android-china-setup/releases/latest)
 
-**[下载正式版 APK](https://github.com/U0Axuan/android-china-setup/releases/latest/download/Android-China-Setup.apk)** · [发布记录](https://github.com/U0Axuan/android-china-setup/releases) · [反馈 / 推荐项目](https://github.com/U0Axuan/android-china-setup/issues/new)
+**[下载正式版 APK](https://github.com/U0Axuan/android-china-setup/releases/latest/download/Android-China-Setup.apk)** · [发布记录](https://github.com/U0Axuan/android-china-setup/releases) · [反馈 / 推荐项目](https://github.com/U0Axuan/android-china-setup/issues/new?template=app-recommendation.yml)
 
-> **当前 GitHub Latest：v0.6.0 固定签名正式版。** 该版本起支持在线应用目录刷新；以后只更新 [catalog/apps.json](catalog/apps.json) 即可增删应用，用户不需要重新下载安装 APK。
+> **V0.7 版本说明**：应用详情可显示原作者 README 原文、GitHub Star 与优先识别 README 原始 Logo；README 和 Star 数据进行本地缓存，离线回退摘要。在线目录每天首次启动检查一次。正式版本以 GitHub Latest 页面为准。
 
 ## 功能
 
-- **分类索引**：一句话应用简介、离线 README 快照、原项目链接和风险提示。
+- **分类索引**：一句话应用简介、原作者 README 原文（离线回退快照）、原项目图标、GitHub Stars、原项目链接和风险提示。
 - **数据驱动目录**：新版本从 GitHub 安全更新 [在线应用清单](catalog/apps.json)，保留离线及已缓存目录；日后增删应用**无需重建 APK**。
 - **下载与安装**：用户逐项选择，支持 GitHub 官方 Release、镜像测速、自定义 HTTPS 下载源与代理；安装需系统确认。
-- **统一设置**：右上角进入测速、代理、应用目录刷新和自更新。
+- **统一设置**：右上角进入设置；下载与测速为二级菜单，包含镜像、测速和代理。
 - **Material 3**：动态配色、暗色模式与简洁的开源终端风格图标。
 
 ## 收录项目
 
-目录数量以[在线清单](catalog/apps.json)为准；此次新增 [Canta](https://github.com/samolego/Canta)（配合 Shizuku 管理预装应用）和 [Spotube](https://github.com/team-spotube/spotube)（插件式开源音乐播放器）。
+目录数量以[在线清单](catalog/apps.json)为准；V0.7 新增 MarcoMovie、TagMacro、XGesture、遥测组件清理、云析、MeiloX、FuoEvolve，移除 Spotube。
 
 **[查看全部应用及其原项目地址](catalog/apps.json)**。感谢每个开源项目的开发者和社区贡献者；本项目只提供目录与原站安装包入口，不重新打包第三方应用。
 
-欢迎通过 [Issues](https://github.com/U0Axuan/android-china-setup/issues/new) 推荐更多优秀项目，并附上官网、许可证及推荐理由。
+**[推荐开源 Android 应用](https://github.com/U0Axuan/android-china-setup/issues/new?template=app-recommendation.yml)**：必须先登录 GitHub，通过专用表单提交**原作者 GitHub 源码仓库地址**（必须为 https://github.com/owner/repo），并填写许可证、Releases、近半年维护和安全检查依据；网盘、转存、APK 直链不受理。
 
 ## 应用入选要求
 
@@ -55,3 +55,7 @@ python tools/catalog.py validate
 在线目录必须通过 HTTPS 获取并验证字段，获取失败自动回退到缓存或内置数据。GitHub API 与镜像在中国大陆的可用性取决于网络环境。稳定版本使用固定签名，旧版 Debug 安装包可能无法直接覆盖升级。
 
 [GitHub Actions](https://github.com/U0Axuan/android-china-setup/actions) · [签名与升级说明](docs/UPDATE_SIGNING.md) · [MIT License](LICENSE)
+
+## V0.7 下载镜像维护
+
+在线下载源保存在 [`catalog/mirrors.json`](catalog/mirrors.json)，应用每天检查一次远程镜像列表并保留缓存、内置备份；维护镜像无需重新发布 APK。测速结果会缓存用于后续自动选择，已经有适用缓存时跳过自动测速，用户仍可手动重新测速。第三方下载只对官方 GitHub Release 提供的 SHA-256 摘要启用，最终校验失败拒绝安装。镜像可用性需要持续检测，不能保证任意时刻均可连接。

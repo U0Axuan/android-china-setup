@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ghfast",
+      "name": "GHFast",
+      "prefix": "https://ghfast.top"
+    },
+    {
+      "id": "gh-proxy",
+      "name": "GH-Proxy",
+      "prefix": "https://gh-proxy.com"
+    },
+    {
+      "id": "llkk",
+      "name": "LLKK",
+      "prefix": "https://gh.llkk.cc"
+    },
+    {
+      "id": "ghproxy-net",
+      "name": "GHProxy.net",
+      "prefix": "https://ghproxy.net"
+    }
+  ]
+}

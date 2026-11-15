@@ -27,6 +27,30 @@
     "repository": "zhihu-plus/android"
   },
   {
+    "name": "X手势（XGesture）",
+    "category": "日常与效率",
+    "summary": "全局手势、单手指针、文字处理和悬浮操作工具。",
+    "readmeSnapshot": "全局手势、单手指针、文字处理和悬浮操作工具。 具体功能、安装方式、开源协议和适用条件以原作者 README 为准。",
+    "homepage": "https://github.com/qpst4/XGesture",
+    "readmeUrl": "https://github.com/qpst4/XGesture#readme",
+    "repository": "qpst4/XGesture",
+    "downloadMode": "auto",
+    "notice": "Android 12+；部分高级功能依赖 Shizuku 或 Root。",
+    "preferredApkRegex": "^xgesture-[0-9.]+-full\\.apk$"
+  },
+  {
+    "name": "TagMacro",
+    "category": "日常与效率",
+    "summary": "使用 NFC 标签触发自动化动作，并读写 Wi-Fi、联系人、链接等 NFC 数据。",
+    "readmeSnapshot": "原作者开源 NFC 自动化工具，提供宏动作、日志、标签读写和快捷触发；不申请联网权限。",
+    "homepage": "https://github.com/Unpiloted0852/TagMacro",
+    "readmeUrl": "https://github.com/Unpiloted0852/TagMacro#readme",
+    "repository": "Unpiloted0852/TagMacro",
+    "downloadMode": "auto",
+    "notice": "发送消息和部分锁屏动作需无障碍权限；启用前核对 SMS、通话权限及自动化触发行为。",
+    "preferredApkRegex": "^TagMacro-v[0-9.]+\\.apk$"
+  },
+  {
     "name": "BiliPai",
     "category": "游戏与影音",
     "summary": "面向 Bilibili 的第三方视频客户端。",
@@ -58,15 +82,40 @@
     "notice": "仅适配特定 Adreno GPU；MTK/Mali 不支持"
   },
   {
-    "name": "Spotube",
+    "name": "MarcoMovie",
     "category": "游戏与影音",
-    "summary": "开源跨平台音乐播放器，通过可扩展音源插件播放与管理音乐。",
-    "readmeSnapshot": "官方 README：Spotube 是可扩展的开源音乐客户端，支持社区音源插件、本地播放控制、同步歌词与曲目下载，Android 和桌面端均可使用。音源可用性可能受地区、服务接口及插件影响，使用时请遵守音乐版权与服务条款。",
-    "homepage": "https://github.com/team-spotube/spotube",
-    "readmeUrl": "https://github.com/team-spotube/spotube#readme",
-    "repository": "team-spotube/spotube",
-    "preferredApkRegex": "^Spotube-android-all-arch\\.apk$",
-    "notice": "音源可用性受地区和插件影响；请预留足够存储空间"
+    "summary": "开源影视播放与片源管理客户端，提供多端版本。",
+    "readmeSnapshot": "开源影视播放与片源管理客户端，提供多端版本。 具体功能、安装方式、开源协议和适用条件以原作者 README 为准。",
+    "homepage": "https://github.com/Pilipala9919/MarcoMovie",
+    "readmeUrl": "https://github.com/Pilipala9919/MarcoMovie#readme",
+    "repository": "Pilipala9919/MarcoMovie",
+    "downloadMode": "auto",
+    "notice": "仅提供播放器，内容源及版权请自行核验。",
+    "preferredApkRegex": "^MarcoMovie-[0-9.]+-android-mobile\\.apk$"
+  },
+  {
+    "name": "MeiloX",
+    "category": "游戏与影音",
+    "summary": "Apple Music 风格的开源多音源 Android 音乐客户端。",
+    "readmeSnapshot": "Apple Music 风格的开源多音源 Android 音乐客户端。 具体功能、安装方式、开源协议和适用条件以原作者 README 为准。",
+    "homepage": "https://github.com/MeiloX/MeiloX",
+    "readmeUrl": "https://github.com/MeiloX/MeiloX#readme",
+    "repository": "MeiloX/MeiloX",
+    "downloadMode": "auto",
+    "notice": "非官方客户端；部分音源受服务条款及版权限制。",
+    "preferredApkRegex": "^app-release\\.apk$"
+  },
+  {
+    "name": "FuoEvolve",
+    "category": "游戏与影音",
+    "summary": "基于 FeelUOwn 生态的音乐客户端项目。",
+    "readmeSnapshot": "基于 FeelUOwn 生态的音乐客户端项目。 具体功能、安装方式、开源协议和适用条件以原作者 README 为准。",
+    "homepage": "https://github.com/feeluown/FuoEvolve",
+    "readmeUrl": "https://github.com/feeluown/FuoEvolve#readme",
+    "repository": "feeluown/FuoEvolve",
+    "downloadMode": "auto",
+    "notice": "请先在原项目发行页确认是否提供适合本机的 Android APK。",
+    "preferredApkRegex": "^fuo-evolve-[0-9.]+-android-signed\\.apk$"
   },
   {
     "name": "FlClash",
@@ -85,6 +134,18 @@
     "homepage": "https://github.com/localsend/localsend",
     "readmeUrl": "https://github.com/localsend/localsend#readme",
     "repository": "localsend/localsend"
+  },
+  {
+    "name": "云析（YunX）",
+    "category": "网络与连接",
+    "summary": "开源 Android 网盘链接解析与下载工具。",
+    "readmeSnapshot": "开源 Android 网盘链接解析与下载工具。 具体功能、安装方式、开源协议和适用条件以原作者 README 为准。",
+    "homepage": "https://github.com/CYQawa/YunX",
+    "readmeUrl": "https://github.com/CYQawa/YunX#readme",
+    "repository": "CYQawa/YunX",
+    "downloadMode": "auto",
+    "notice": "仅处理有权访问的资源，第三方服务接口可能发生变化。",
+    "preferredApkRegex": "^YunX_release_[0-9.]+\\.apk$"
   },
   {
     "name": "Obtainium",
@@ -133,6 +194,18 @@
     "preferredApkRegex": "^androidApp-release\\.apk$",
     "notice": "需 Shizuku；误删关键系统应用可能导致无法启动",
     "risk": "caution"
+  },
+  {
+    "name": "遥测组件清理",
+    "category": "系统与调试",
+    "summary": "通过 Shizuku 检测并管理 Android 设备中的运营商遥测组件。",
+    "readmeSnapshot": "通过 Shizuku 检测并管理 Android 设备中的运营商遥测组件。 具体功能、安装方式、开源协议和适用条件以原作者 README 为准。",
+    "homepage": "https://github.com/Eynnzerr/TelemetryCleaner",
+    "readmeUrl": "https://github.com/Eynnzerr/TelemetryCleaner#readme",
+    "repository": "Eynnzerr/TelemetryCleaner",
+    "downloadMode": "auto",
+    "notice": "卸载系统组件可能影响通信、录音等功能；操作前请确认兼容性。",
+    "preferredApkRegex": "^TelemetryCleaner-v[0-9.]+\\.apk$"
   },
   {
     "name": "GhostLock",

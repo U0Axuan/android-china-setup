@@ -34,9 +34,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val bundled = runCatching { Catalog.read(this) }.getOrDefault(emptyList())
         val apps = CatalogRepository.load(this, bundled)
+        MirrorRegistry.load(this)
+        Thread { runCatching { MirrorRegistry.refreshDaily(this) } }.start()
         val prefs = getSharedPreferences("preferences", MODE_PRIVATE)
         @Suppress("DEPRECATION")
-        val version = packageManager.getPackageInfo(packageName, 0).versionName ?: "0.6.0-dev"
+        val version = packageManager.getPackageInfo(packageName, 0).versionName ?: "0.7.0-dev"
         setContent {
             AndroidChinaTheme {
                 AppRoot(apps, prefs, version)
@@ -48,6 +50,27 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun AppRoot(initialApps: List<CatalogApp>, prefs: SharedPreferences, version: String) {
         var apps by remember { mutableStateOf(initialApps) }
+        val upstream = remember { UpstreamRepository(this) }
+        var metadata by remember { mutableStateOf(initialApps.filter { it.repository.isNotBlank() }
+            .associate { it.repository to upstream.cached(it.repository) }) }
+        val metadataPending = remember { mutableSetOf<String>() }
+        val metadataSemaphore = remember { java.util.concurrent.Semaphore(4) }
+        fun loadMetadata(repository: String, readme: Boolean = false) {
+            if (repository.isBlank() || (!readme && !upstream.isStale(repository))) return
+            synchronized(metadataPending) {
+                if (!metadataPending.add(repository)) return
+            }
+            Thread {
+                metadataSemaphore.acquireUninterruptibly()
+                try {
+                    val result = upstream.update(repository, readme)
+                    runOnUiThread { metadata = metadata + (repository to result) }
+                } finally {
+                    metadataSemaphore.release()
+                    synchronized(metadataPending) { metadataPending.remove(repository) }
+                }
+            }.start()
+        }
         val downloader = remember { ApkDownloader(this) }
         val benchmark = remember { SourceBenchmarker() }
         var settingsOpen by remember { mutableStateOf(false) }
@@ -187,12 +210,15 @@ class MainActivity : ComponentActivity() {
                     }
                     runOnUiThread { speedText = "正在测试各节点…" }
                     var passed = 0
+                    val measured = mutableMapOf<String, ProbeResult>()
                     benchmark.test(asset, net, source) { result ->
+                        measured[result.id] = result
                         if (result.latencyMs != null) passed++
                         runOnUiThread { probes = probes + (result.id to result) }
                     }
+                    downloader.rememberBenchmark(asset, net, source, measured)
                     runOnUiThread {
-                        speedText = "测速完成：$passed 个节点可用；速率为短时样本估算"
+                        speedText = "测速完成：$passed 个节点可用；已缓存结果，后续下载不再自动测速"
                         speedBusy = false
                     }
                 } catch (e: Exception) {
@@ -259,6 +285,16 @@ class MainActivity : ComponentActivity() {
             checkUpdate()
             refreshCatalog(false)
         }
+        LaunchedEffect(apps) {
+            apps.filter { it.repository.isNotBlank() }.forEach {
+                if (upstream.isStale(it.repository)) loadMetadata(it.repository)
+            }
+        }
+        LaunchedEffect(detail?.repository) {
+            detail?.repository?.takeIf { it.isNotBlank() }?.let { repository ->
+                if (metadata[repository]?.readme.isNullOrBlank()) loadMetadata(repository, true)
+            }
+        }
         BackHandler(settingsOpen) { settingsOpen = false }
 
         Scaffold(
@@ -301,7 +337,7 @@ class MainActivity : ComponentActivity() {
             Box(Modifier.fillMaxSize().padding(padding)) {
                 if (!settingsOpen) {
                     CatalogHome(
-                        apps = apps, busy = downloadBusy, status = downloadText,
+                        apps = apps, busy = downloadBusy, metadata = metadata, status = downloadText,
                         percent = downloadPercent,
                         ready = downloadedFile != null && !updateDownload,
                         onInstall = ::installDownloaded,
@@ -354,7 +390,7 @@ class MainActivity : ComponentActivity() {
                 val app = detail
                 if (app != null && !settingsOpen) {
                     CatalogDetail(
-                        app = app, busy = downloadBusy,
+                        app = app, busy = downloadBusy, upstream = metadata[app.repository],
                         onDismiss = { detail = null },
                         onDownload = { startDownload(it, false) },
                         openUrl = ::openWebsite
