@@ -117,8 +117,14 @@ class ApkDownloader(private val context: Context) {
         val candidates = DownloadSources.candidates(asset, selection)
         val sources = if (selection.selectedId == DownloadSources.AUTO &&
             candidates.size > 1) {
-            sourceStatus("正在测速 ${candidates.size} 个下载源…")
-            orderByConnectivity(candidates, options)
+            val cached = cachedSourceOrder(candidates, options)
+            if (cached != null) {
+                sourceStatus("使用已缓存的下载源测速结果，不再自动测速")
+                cached
+            } else {
+                sourceStatus("首次测速 ${candidates.size} 个下载源…")
+                orderByConnectivity(candidates, options).also { saveSourceOrder(it, candidates, options) }
+            }
         } else candidates
         var lastError: Exception? = null
         for ((index, source) in sources.withIndex()) {
@@ -131,6 +137,31 @@ class ApkDownloader(private val context: Context) {
             }
         }
         throw lastError ?: IllegalStateException("没有可用的下载源")
+    }
+
+    private fun speedCacheKey(candidates: List<SourceChoice>, options: NetworkOptions): String =
+        (candidates.joinToString("|") { it.id + ":" + it.url.substringBefore("/https://") } +
+            "|" + options.proxyEnabled + "|" + options.proxyType + "|" +
+            options.proxyHost + ":" + options.proxyPort).hashCode().toString()
+
+    private fun cachedSourceOrder(
+        candidates: List<SourceChoice>, options: NetworkOptions
+    ): List<SourceChoice>? {
+        val prefs = context.getSharedPreferences("download-speed-cache", Context.MODE_PRIVATE)
+        val key = speedCacheKey(candidates, options)
+        val ids = prefs.getString("ranking-$key", null)?.split(",") ?: return null
+        if (ids.size != candidates.size || ids.toSet() != candidates.map { it.id }.toSet())
+            return null
+        return ids.mapNotNull { id -> candidates.find { it.id == id } }
+            .takeIf { it.size == candidates.size }
+    }
+
+    private fun saveSourceOrder(
+        ranked: List<SourceChoice>, candidates: List<SourceChoice>, options: NetworkOptions
+    ) {
+        val key = speedCacheKey(candidates, options)
+        context.getSharedPreferences("download-speed-cache", Context.MODE_PRIVATE)
+            .edit().putString("ranking-$key", ranked.joinToString(",") { it.id }).apply()
     }
 
     private fun orderByConnectivity(
