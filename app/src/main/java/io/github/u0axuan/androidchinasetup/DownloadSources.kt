@@ -22,12 +22,22 @@ object DownloadSources {
     // Community services may change or disappear; test availability at runtime.
     // This is a curated subset of commonly documented URL-prefix proxies,
     // NOT a claim that the website above exposes this exact source list.
-    val presets: List<MirrorSource> = listOf(
+    private val builtInPresets: List<MirrorSource> = listOf(
         MirrorSource("ghfast", "GHFast", "https://ghfast.top"),
         MirrorSource("gh-proxy", "GH-Proxy", "https://gh-proxy.com"),
         MirrorSource("llkk", "LLKK", "https://gh.llkk.cc"),
         MirrorSource("ghproxy-net", "GHProxy.net", "https://ghproxy.net")
     )
+
+    @Volatile private var onlinePresets: List<MirrorSource> = emptyList()
+    val presets: List<MirrorSource> get() = onlinePresets.ifEmpty { builtInPresets }
+
+    fun setCuratedPresets(updated: List<MirrorSource>) {
+        val valid = updated.filter { it.id.matches(Regex("[a-z0-9-]{2,35}")) &&
+            it.name.length in 2..45 && validPrefix(it.prefix) != null }
+            .distinctBy { it.id }.take(20)
+        if (valid.isNotEmpty()) onlinePresets = valid
+    }
 
     fun validPrefix(raw: String): String? {
         val value = raw.trim().trimEnd('/')
