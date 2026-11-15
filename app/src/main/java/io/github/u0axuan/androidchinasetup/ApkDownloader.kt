@@ -139,6 +139,19 @@ class ApkDownloader(private val context: Context) {
         throw lastError ?: IllegalStateException("没有可用的下载源")
     }
 
+    fun rememberBenchmark(asset: ReleaseAsset, options: NetworkOptions,
+                          selection: SourceSelection, results: Map<String, ProbeResult>) {
+        if (results.isEmpty()) return
+        val candidates = DownloadSources.candidates(
+            asset, SourceSelection(DownloadSources.AUTO, selection.customs))
+        if (candidates.isEmpty()) return
+        val ranked = candidates.sortedWith(compareBy<SourceChoice> {
+            if (results[it.id]?.latencyMs == null) 1 else 0
+        }.thenByDescending { results[it.id]?.throughputKBps ?: -1L }
+            .thenBy { results[it.id]?.latencyMs ?: Long.MAX_VALUE })
+        saveSourceOrder(ranked, candidates, options)
+    }
+
     private fun speedCacheKey(candidates: List<SourceChoice>, options: NetworkOptions): String =
         (candidates.joinToString("|") { it.id + ":" + it.url.substringBefore("/https://") } +
             "|" + options.proxyEnabled + "|" + options.proxyType + "|" +
