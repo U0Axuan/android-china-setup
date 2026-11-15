@@ -107,16 +107,26 @@ try:
     check("Settings includes online catalog refresh",bool(elements(root,"刷新应用目录")))
     check("GitHub recommendation entry present",bool(elements(root,"提交应用推荐")))
     screenshot("02_release_settings")
-    menu=elements(root,"进入下载与测速")
-    if menu:
-        tap(menu[0])
+    for attempt in range(7):
+        root=dump("02_download_submenu_attempt_"+str(attempt))
+        if elements(root,"开始测速") and elements(root,"智能优选"):
+            break
+        menu=elements(root,"进入下载与测速")
+        if menu:
+            tap(menu[0])
+        else:
+            time.sleep(1)
     root=dump("02_download_submenu")
     check("Benchmark appears in secondary menu",bool(elements(root,"开始测速")))
     check("Mirrors appear in secondary menu",bool(elements(root,"智能优选")))
     screenshot("02_download_submenu")
-    back_menu=elements(root,"返回设置")
-    if back_menu:
-        tap(back_menu[0])
+    for attempt in range(5):
+        root=dump("02_back_to_settings_"+str(attempt))
+        if elements(root,"刷新应用目录"): break
+        back_menu=elements(root,"返回设置")
+        if back_menu: tap(back_menu[0])
+        else: adb("shell","input","keyevent","4")
+
     # Prefer the visible Material 3 back control. Software-rendered Android
     # emulators can lose a single key event during system animations.
     for attempt in range(6):
