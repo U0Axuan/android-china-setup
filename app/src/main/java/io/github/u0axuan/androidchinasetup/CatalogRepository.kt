@@ -10,6 +10,8 @@ import java.net.HttpURLConnection
 import java.net.InetSocketAddress
 import java.net.Proxy
 import java.net.URL
+import java.time.LocalDate
+import java.time.ZoneId
 
 data class CatalogRefreshResult(val apps: List<CatalogApp>, val message: String)
 
@@ -25,14 +27,16 @@ object CatalogRepository {
         "https://api.github.com/repos/U0Axuan/android-china-setup/contents/catalog/apps.json?ref=main"
     private const val PREFS = "catalog-update"
     private const val LAST_ATTEMPT = "last_attempt"
-    private const val INTERVAL_MS = 12L * 60 * 60 * 1000
+    private const val LAST_DAY = "last_attempt_day"
     private const val MAX_HTTP_BYTES = 384 * 1024
     private const val CACHE_NAME = "catalog-cache.json"
 
     fun shouldAutoRefresh(context: Context): Boolean {
         val previous = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             .getLong(LAST_ATTEMPT, 0L)
-        return System.currentTimeMillis() - previous > INTERVAL_MS
+        val today = LocalDate.now(ZoneId.systemDefault()).toString()
+        val lastDay = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(LAST_DAY, null)
+        return lastDay != today
     }
 
     /** Read last validated data, or the APK-bundled catalog when offline. */
@@ -47,7 +51,8 @@ object CatalogRepository {
 
     fun refresh(context: Context, options: NetworkOptions): CatalogRefreshResult {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .edit().putLong(LAST_ATTEMPT, System.currentTimeMillis()).apply()
+            .edit().putLong(LAST_ATTEMPT, System.currentTimeMillis())
+            .putString(LAST_DAY, LocalDate.now(ZoneId.systemDefault()).toString()).apply()
         val failures = mutableListOf<String>()
         for (endpoint in listOf(RAW_URL, API_URL)) {
             try {
