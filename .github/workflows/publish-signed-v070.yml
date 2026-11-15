@@ -14,7 +14,7 @@ permissions:
 
 concurrency:
   group: publish-signed-v0.7.0
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
