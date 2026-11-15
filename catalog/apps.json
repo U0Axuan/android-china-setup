@@ -38,6 +38,17 @@
     "notice": "Android 12+；部分高级功能依赖 Shizuku 或 Root。"
   },
   {
+    "name": "TagMacro",
+    "category": "日常与效率",
+    "summary": "使用 NFC 标签触发自动化动作，并读写 Wi-Fi、联系人、链接等 NFC 数据。",
+    "readmeSnapshot": "原作者开源 NFC 自动化工具，提供宏动作、日志、标签读写和快捷触发；不申请联网权限。",
+    "homepage": "https://github.com/Unpiloted0852/TagMacro",
+    "readmeUrl": "https://github.com/Unpiloted0852/TagMacro#readme",
+    "repository": "Unpiloted0852/TagMacro",
+    "downloadMode": "external",
+    "notice": "发送消息和部分锁屏动作需无障碍权限；启用前核对 SMS、通话权限及自动化触发行为。"
+  },
+  {
     "name": "BiliPai",
     "category": "游戏与影音",
     "summary": "面向 Bilibili 的第三方视频客户端。",
