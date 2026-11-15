@@ -48,6 +48,24 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun AppRoot(initialApps: List<CatalogApp>, prefs: SharedPreferences, version: String) {
         var apps by remember { mutableStateOf(initialApps) }
+        val upstream = remember { UpstreamRepository(this) }
+        var metadata by remember { mutableStateOf(initialApps.filter { it.repository.isNotBlank() }
+            .associate { it.repository to upstream.cached(it.repository) }) }
+        val metadataPending = remember { mutableSetOf<String>() }
+        fun loadMetadata(repository: String, readme: Boolean = false) {
+            if (repository.isBlank() || (!readme && !upstream.isStale(repository))) return
+            synchronized(metadataPending) {
+                if (!metadataPending.add(repository)) return
+            }
+            Thread {
+                try {
+                    val result = upstream.update(repository, readme)
+                    runOnUiThread { metadata = metadata + (repository to result) }
+                } finally {
+                    synchronized(metadataPending) { metadataPending.remove(repository) }
+                }
+            }.start()
+        }
         val downloader = remember { ApkDownloader(this) }
         val benchmark = remember { SourceBenchmarker() }
         var settingsOpen by remember { mutableStateOf(false) }
@@ -259,6 +277,16 @@ class MainActivity : ComponentActivity() {
             checkUpdate()
             refreshCatalog(false)
         }
+        LaunchedEffect(apps) {
+            apps.filter { it.repository.isNotBlank() }.forEach {
+                if (upstream.isStale(it.repository)) loadMetadata(it.repository)
+            }
+        }
+        LaunchedEffect(detail?.repository) {
+            detail?.repository?.takeIf { it.isNotBlank() }?.let { repository ->
+                if (metadata[repository]?.readme.isNullOrBlank()) loadMetadata(repository, true)
+            }
+        }
         BackHandler(settingsOpen) { settingsOpen = false }
 
         Scaffold(
@@ -301,7 +329,7 @@ class MainActivity : ComponentActivity() {
             Box(Modifier.fillMaxSize().padding(padding)) {
                 if (!settingsOpen) {
                     CatalogHome(
-                        apps = apps, busy = downloadBusy, status = downloadText,
+                        apps = apps, busy = downloadBusy, metadata = metadata, status = downloadText,
                         percent = downloadPercent,
                         ready = downloadedFile != null && !updateDownload,
                         onInstall = ::installDownloaded,
@@ -354,7 +382,7 @@ class MainActivity : ComponentActivity() {
                 val app = detail
                 if (app != null && !settingsOpen) {
                     CatalogDetail(
-                        app = app, busy = downloadBusy,
+                        app = app, busy = downloadBusy, upstream = metadata[app.repository],
                         onDismiss = { detail = null },
                         onDownload = { startDownload(it, false) },
                         openUrl = ::openWebsite
