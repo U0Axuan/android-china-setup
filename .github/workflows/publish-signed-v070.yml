@@ -90,7 +90,7 @@ jobs:
           (cd dist && sha256sum Android-China-Setup.apk > SHA256SUMS.txt)
           echo "Saved signed APK and SHA256SUMS.txt"
           cat dist/SHA256SUMS.txt
-      - name: Enforce same signing identity as v0.7.0
+      - name: Enforce same signing identity as v0.6.0
         shell: bash
         run: |
           set -euo pipefail
@@ -101,7 +101,7 @@ jobs:
             echo "::error::Signing certificate differs from established stable signer. Refusing upgrade-breaking release."
             exit 1
           fi
-          echo "Signing fingerprint matches v0.7.0 release identity."
+          echo "Signing fingerprint matches existing stable release identity."
       - name: Upload verified signed APK candidate
         uses: actions/upload-artifact@v4
         with:
