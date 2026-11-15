@@ -34,8 +34,9 @@
     "homepage": "https://github.com/qpst4/XGesture",
     "readmeUrl": "https://github.com/qpst4/XGesture#readme",
     "repository": "qpst4/XGesture",
-    "downloadMode": "external",
-    "notice": "Android 12+；部分高级功能依赖 Shizuku 或 Root。"
+    "downloadMode": "auto",
+    "notice": "Android 12+；部分高级功能依赖 Shizuku 或 Root。",
+    "preferredApkRegex": "^xgesture-[0-9.]+-full\\\\.apk$"
   },
   {
     "name": "TagMacro",
@@ -45,8 +46,9 @@
     "homepage": "https://github.com/Unpiloted0852/TagMacro",
     "readmeUrl": "https://github.com/Unpiloted0852/TagMacro#readme",
     "repository": "Unpiloted0852/TagMacro",
-    "downloadMode": "external",
-    "notice": "发送消息和部分锁屏动作需无障碍权限；启用前核对 SMS、通话权限及自动化触发行为。"
+    "downloadMode": "auto",
+    "notice": "发送消息和部分锁屏动作需无障碍权限；启用前核对 SMS、通话权限及自动化触发行为。",
+    "preferredApkRegex": "^TagMacro-v[0-9.]+\\\\.apk$"
   },
   {
     "name": "BiliPai",
@@ -87,8 +89,9 @@
     "homepage": "https://github.com/Pilipala9919/MarcoMovie",
     "readmeUrl": "https://github.com/Pilipala9919/MarcoMovie#readme",
     "repository": "Pilipala9919/MarcoMovie",
-    "downloadMode": "external",
-    "notice": "仅提供播放器，内容源及版权请自行核验。"
+    "downloadMode": "auto",
+    "notice": "仅提供播放器，内容源及版权请自行核验。",
+    "preferredApkRegex": "^MarcoMovie-[0-9.]+-android-mobile\\\\.apk$"
   },
   {
     "name": "MeiloX",
@@ -98,8 +101,9 @@
     "homepage": "https://github.com/MeiloX/MeiloX",
     "readmeUrl": "https://github.com/MeiloX/MeiloX#readme",
     "repository": "MeiloX/MeiloX",
-    "downloadMode": "external",
-    "notice": "非官方客户端；部分音源受服务条款及版权限制。"
+    "downloadMode": "auto",
+    "notice": "非官方客户端；部分音源受服务条款及版权限制。",
+    "preferredApkRegex": "^app-release\\\\.apk$"
   },
   {
     "name": "FuoEvolve",
@@ -109,8 +113,9 @@
     "homepage": "https://github.com/feeluown/FuoEvolve",
     "readmeUrl": "https://github.com/feeluown/FuoEvolve#readme",
     "repository": "feeluown/FuoEvolve",
-    "downloadMode": "external",
-    "notice": "请先在原项目发行页确认是否提供适合本机的 Android APK。"
+    "downloadMode": "auto",
+    "notice": "请先在原项目发行页确认是否提供适合本机的 Android APK。",
+    "preferredApkRegex": "^fuo-evolve-[0-9.]+-android-signed\\\\.apk$"
   },
   {
     "name": "FlClash",
@@ -138,8 +143,9 @@
     "homepage": "https://github.com/CYQawa/YunX",
     "readmeUrl": "https://github.com/CYQawa/YunX#readme",
     "repository": "CYQawa/YunX",
-    "downloadMode": "external",
-    "notice": "仅处理有权访问的资源，第三方服务接口可能发生变化。"
+    "downloadMode": "auto",
+    "notice": "仅处理有权访问的资源，第三方服务接口可能发生变化。",
+    "preferredApkRegex": "^YunX_release_[0-9.]+\\\\.apk$"
   },
   {
     "name": "Obtainium",
@@ -197,8 +203,9 @@
     "homepage": "https://github.com/Eynnzerr/TelemetryCleaner",
     "readmeUrl": "https://github.com/Eynnzerr/TelemetryCleaner#readme",
     "repository": "Eynnzerr/TelemetryCleaner",
-    "downloadMode": "external",
-    "notice": "卸载系统组件可能影响通信、录音等功能；操作前请确认兼容性。"
+    "downloadMode": "auto",
+    "notice": "卸载系统组件可能影响通信、录音等功能；操作前请确认兼容性。",
+    "preferredApkRegex": "^TelemetryCleaner-v[0-9.]+\\\\.apk$"
   },
   {
     "name": "GhostLock",
