@@ -71,12 +71,9 @@ fun SettingsPage(
     ) {
         item(key = "settings-title") {
             Column(Modifier.padding(bottom = 6.dp)) {
-                Text(if (downloadSettingsOpen) "下载与测速" else "设置", style = MaterialTheme.typography.headlineSmall)
-                if (downloadSettingsOpen) {
-                    OutlinedButton(onClick = { setDownloadSettingsOpen(false) }) { Text("返回设置") }
-                }
-                Text(if (downloadSettingsOpen) "下载源、镜像测速与网络代理" else "应用目录、下载管理与更新",
-                    style = MaterialTheme.typography.bodySmall,
+                Text(if (downloadSettingsOpen) "下载源、镜像测速与网络代理"
+                    else "应用目录、项目推荐与版本更新",
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
