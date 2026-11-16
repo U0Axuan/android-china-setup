@@ -7,11 +7,13 @@ on:
       - 'catalog/apps.json'
       - 'tools/catalog.py'
       - 'tools/catalog_audit.py'
+      - 'tools/logo_audit.py'
       - '.github/workflows/catalog-validate.yml'
   pull_request:
     paths:
       - 'catalog/apps.json'
       - 'tools/catalog.py'
+      - 'tools/logo_audit.py'
       - '.github/workflows/catalog-validate.yml'
   workflow_dispatch:
 
@@ -33,5 +35,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python3 tools/catalog_audit.py
+      - name: Verify curated upstream app logos (never use first README image)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 tools/logo_audit.py
       - name: Confirm no Android build is needed
         run: echo "Catalog-only commits are handled as JSON data; no Gradle, SDK, emulator or APK signing required."
