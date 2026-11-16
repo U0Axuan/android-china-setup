@@ -151,7 +151,7 @@
     "downloadMode": "auto",
     "notice": "仅处理有权访问的资源，第三方服务接口可能发生变化。",
     "preferredApkRegex": "^YunX_release_[0-9.]+\\.apk$",
-    "logoPath": "app/src/main/res/drawable/icon.png"
+    "logoPath": "app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp"
   },
   {
     "name": "Obtainium",
