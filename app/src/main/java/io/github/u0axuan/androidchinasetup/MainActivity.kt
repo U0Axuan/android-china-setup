@@ -55,8 +55,8 @@ class MainActivity : ComponentActivity() {
             .associate { it.repository to upstream.cached(it.repository, it.logoPath) }) }
         val metadataPending = remember { mutableSetOf<String>() }
         val metadataSemaphore = remember { java.util.concurrent.Semaphore(4) }
-        fun loadMetadata(repository: String, readme: Boolean = false) {
-            if (repository.isBlank() || (!readme && !upstream.isStale(repository))) return
+        fun loadMetadata(repository: String, readme: Boolean = false, force: Boolean = false) {
+            if (repository.isBlank() || (!readme && !force && !upstream.isStale(repository))) return
             synchronized(metadataPending) {
                 if (!metadataPending.add(repository)) return
             }
@@ -289,7 +289,9 @@ class MainActivity : ComponentActivity() {
         }
         LaunchedEffect(apps) {
             apps.filter { it.repository.isNotBlank() }.forEach {
-                if (upstream.isStale(it.repository)) loadMetadata(it.repository)
+                val pathChanged = upstream.cached(it.repository, it.logoPath).logoPath != it.logoPath
+                if (upstream.isStale(it.repository) || pathChanged)
+                    loadMetadata(it.repository, force = pathChanged)
             }
         }
         LaunchedEffect(detail?.repository) {
