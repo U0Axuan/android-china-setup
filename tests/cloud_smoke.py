@@ -242,11 +242,11 @@ try:
             return None
         return switch
     toggle=None
-    for attempt in range(7):
+    for attempt in range(12):
         toggle=visible_proxy_switch("09_proxy_visible_"+str(attempt))
         if toggle is not None:
             break
-        swipe(True)
+        swipe(False if attempt < 6 else True)
     assert_check("Proxy toggle fully visible in safe touch area",toggle is not None)
     # Verify actual state, not that the tap command merely returned.
     if toggle.attrib.get("checked")!="true":
