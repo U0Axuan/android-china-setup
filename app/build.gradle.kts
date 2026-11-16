@@ -11,8 +11,8 @@ android {
         applicationId = "io.github.u0axuan.androidchinasetup"
         minSdk = 30
         targetSdk = 35
-        versionCode = 7
-        versionName = "0.7.0"
+        versionCode = 8
+        versionName = "0.7.1"
     }
     // Optional stable release signing. Credentials and keystore are CI secrets,
     // never checked into the public repository.
