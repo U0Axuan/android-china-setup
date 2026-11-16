@@ -128,6 +128,8 @@ def add(data, args):
                   homepage=homepage, readmeUrl=readme)
     if repo:
         result["repository"] = repo
+    if getattr(args, "logo_path", ""):
+        result["logoPath"] = args.logo_path
     if mode != "auto":
         result["downloadMode"] = mode
     if args.risk:
@@ -200,6 +202,7 @@ def main():
     cmd.add_argument("--risk", choices=["","caution","high"], default="")
     cmd.add_argument("--notice", default="")
     cmd.add_argument("--apk-regex", default="", help="Exact official APK asset filename regex")
+    cmd.add_argument("--logo-path", default="", help="Verified official repo-relative raster app icon, or omit")
     args = parser.parse_args()
 
     if args.command == "selftest":
