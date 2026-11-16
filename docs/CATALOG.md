@@ -16,6 +16,8 @@ git push
 
 `--repo` 为 GitHub 官方仓库 `owner/repository`；会自动补全 `homepage` 和 `readmeUrl`。通过 `--homepage` 与 `--readme-url` 可以覆盖。没有 GitHub 发行文件时，用 `--mode external` 仅展示原项目入口。
 
+新增原作者图标时，只有确认文件是官方 GitHub 仓库内的应用图标（而非 README 徽章、截图或横幅）才使用 `--logo-path "app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp"`。无法核实时**留空**；目录更新将运行 `tools/logo_audit.py`，核查文件存在、来源、栅格格式、大小和比例。不会自动拿 README 第一张图片代替 Logo。
+
 其他可选参数：`--notice`（兼容性/风险说明）、`--risk caution`（风险警告）、`--risk high --mode external`（高风险项目仅链接）、`--apk-regex`（项目 Release 有多个 APK 时，指定官方资源的**完整文件名**）。
 
 **不要为每次新增应用改动 MainActivity、Gradle、README 中的应用表或 APK 版本号。** 只有修改程序逻辑、主题或希望更新离线内置清单时才需要修改 APK 源码并重新签名发布。
