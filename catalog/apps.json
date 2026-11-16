@@ -6,7 +6,8 @@
     "readmeSnapshot": "项目围绕 Rime 输入方案提供 Android 中文输入体验。安装后仍需在 Android 系统设置中启用并切换默认输入法。",
     "homepage": "https://ime.ximei.me/",
     "readmeUrl": "https://github.com/ximeiorg/Xime#readme",
-    "repository": "ximeiorg/Xime"
+    "repository": "ximeiorg/Xime",
+    "logoPath": "app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp"
   },
   {
     "name": "Via 浏览器",
@@ -91,7 +92,8 @@
     "repository": "Pilipala9919/MarcoMovie",
     "downloadMode": "auto",
     "notice": "仅提供播放器，内容源及版权请自行核验。",
-    "preferredApkRegex": "^MarcoMovie-[0-9.]+-android-mobile\\.apk$"
+    "preferredApkRegex": "^MarcoMovie-[0-9.]+-android-mobile\\.apk$",
+    "logoPath": "docs/images/app-icon-512.png"
   },
   {
     "name": "MeiloX",
@@ -103,7 +105,8 @@
     "repository": "MeiloX/MeiloX",
     "downloadMode": "auto",
     "notice": "非官方客户端；部分音源受服务条款及版权限制。",
-    "preferredApkRegex": "^app-release\\.apk$"
+    "preferredApkRegex": "^app-release\\.apk$",
+    "logoPath": "screenshot/logo.png"
   },
   {
     "name": "FuoEvolve",
@@ -115,7 +118,8 @@
     "repository": "feeluown/FuoEvolve",
     "downloadMode": "auto",
     "notice": "请先在原项目发行页确认是否提供适合本机的 Android APK。",
-    "preferredApkRegex": "^fuo-evolve-[0-9.]+-android-signed\\.apk$"
+    "preferredApkRegex": "^fuo-evolve-[0-9.]+-android-signed\\.apk$",
+    "logoPath": "androidApp/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
   },
   {
     "name": "FlClash",
@@ -133,7 +137,8 @@
     "readmeSnapshot": "LocalSend 为跨平台开源文件传输工具，设备在同一局域网内即可共享文件；支持 Android、桌面等平台。",
     "homepage": "https://github.com/localsend/localsend",
     "readmeUrl": "https://github.com/localsend/localsend#readme",
-    "repository": "localsend/localsend"
+    "repository": "localsend/localsend",
+    "logoPath": "app/assets/img/logo-256.png"
   },
   {
     "name": "云析（YunX）",
@@ -145,7 +150,8 @@
     "repository": "CYQawa/YunX",
     "downloadMode": "auto",
     "notice": "仅处理有权访问的资源，第三方服务接口可能发生变化。",
-    "preferredApkRegex": "^YunX_release_[0-9.]+\\.apk$"
+    "preferredApkRegex": "^YunX_release_[0-9.]+\\.apk$",
+    "logoPath": "app/src/main/res/drawable/icon.png"
   },
   {
     "name": "Obtainium",
@@ -154,7 +160,8 @@
     "readmeSnapshot": "Obtainium 从 GitHub 等开发者发布源跟踪应用版本，可管理非应用商店分发的开源 APK。",
     "homepage": "https://github.com/ImranR98/Obtainium",
     "readmeUrl": "https://github.com/ImranR98/Obtainium#readme",
-    "repository": "ImranR98/Obtainium"
+    "repository": "ImranR98/Obtainium",
+    "logoPath": "assets/graphics/icon_small.png"
   },
   {
     "name": "F-Droid",
@@ -172,7 +179,8 @@
     "readmeSnapshot": "Material Files 支持常见本地文件操作与存储访问，采用 Android Material 设计风格，适合替代简单文件管理器。",
     "homepage": "https://github.com/zhanghai/MaterialFiles",
     "readmeUrl": "https://github.com/zhanghai/MaterialFiles#readme",
-    "repository": "zhanghai/MaterialFiles"
+    "repository": "zhanghai/MaterialFiles",
+    "logoPath": "app/src/main/res/mipmap-xxxhdpi/launcher_icon.png"
   },
   {
     "name": "Shizuku",
@@ -181,7 +189,8 @@
     "readmeSnapshot": "Shizuku 允许应用通过其服务调用部分 Android 系统 API，使用前需要按官方说明授权及启动服务；不等同于 Root。",
     "homepage": "https://github.com/RikkaApps/Shizuku",
     "readmeUrl": "https://github.com/RikkaApps/Shizuku#readme",
-    "repository": "RikkaApps/Shizuku"
+    "repository": "RikkaApps/Shizuku",
+    "logoPath": "manager/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
   },
   {
     "name": "Canta",
@@ -193,7 +202,8 @@
     "repository": "samolego/Canta",
     "preferredApkRegex": "^androidApp-release\\.apk$",
     "notice": "需 Shizuku；误删关键系统应用可能导致无法启动",
-    "risk": "caution"
+    "risk": "caution",
+    "logoPath": "androidApp/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
   },
   {
     "name": "遥测组件清理",
@@ -205,7 +215,8 @@
     "repository": "Eynnzerr/TelemetryCleaner",
     "downloadMode": "auto",
     "notice": "卸载系统组件可能影响通信、录音等功能；操作前请确认兼容性。",
-    "preferredApkRegex": "^TelemetryCleaner-v[0-9.]+\\.apk$"
+    "preferredApkRegex": "^TelemetryCleaner-v[0-9.]+\\.apk$",
+    "logoPath": "app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp"
   },
   {
     "name": "GhostLock",
