@@ -130,9 +130,9 @@ private fun CatalogRow(
     ) {
         Row(Modifier.padding(start = 12.dp, top = 12.dp, end = 10.dp, bottom = 12.dp),
             verticalAlignment = Alignment.CenterVertically) {
-            val verifiedIcon = upstream?.logo?.takeIf {
-                app.logoPath.isNotBlank() && upstream.logoPath == app.logoPath
-            }
+            val verifiedIcon = upstream?.takeIf {
+                app.logoPath.isNotBlank() && it.logoPath == app.logoPath
+            }?.logo
             var iconFailed by remember(verifiedIcon) { mutableStateOf(false) }
             if (!verifiedIcon.isNullOrBlank() && !iconFailed) {
                 AsyncImage(
