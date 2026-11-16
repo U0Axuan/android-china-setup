@@ -285,6 +285,15 @@ try:
     assert_check("Relaunch after preferences",bool(matches(dump("12_restart"),"Android China Setup")))
     assert_check("Custom source survives restart","mirror.example.com" in pref())
     shot("12_relaunch")
+    # Material 3 smoke: system dark theme and 140% text must not crash the catalog.
+    adb("shell", "cmd", "uimode", "night", "yes", check=False)
+    adb("shell", "settings", "put", "system", "font_scale", "1.4", check=False)
+    time.sleep(3)
+    assert_check("Dark theme and larger text keep catalog usable",
+        bool(matches(dump("13_dark_large_text"), "精选 Android 开源应用")))
+    shot("13_dark_large_text")
+    adb("shell", "settings", "put", "system", "font_scale", "1.0", check=False)
+    adb("shell", "cmd", "uimode", "night", "no", check=False)
 
 except Exception as exc:
     checks.append({"name":"blocking_error","passed":False,"note":repr(exc)})
