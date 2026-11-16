@@ -127,7 +127,7 @@ try:
         click("曦码输入法")
         root=dump("02_readme_retry_"+str(attempt))
     assert_check("Upstream README area displayed",bool(matches(root,"README")))
-    assert_check("README is cached or offline",bool(matches(root,"离线摘要")) or bool(matches(root,"GitHub 原文")))
+    assert_check("README is cached or offline",bool(matches(root,"离线摘要")) or bool(matches(root,"原文已排版")))
     assert_check("Original README link",bool(matches(root,"阅读原项目 README 全文")))
     assert_check("Original project link",bool(matches(root,"访问原项目",True)))
     shot("02_readme_snapshot")
