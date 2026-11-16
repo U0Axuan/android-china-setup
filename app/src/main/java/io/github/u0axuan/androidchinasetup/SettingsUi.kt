@@ -38,6 +38,8 @@ data class SettingsUiState(
 
 @Composable
 fun SettingsPage(
+    downloadSettingsOpen: Boolean,
+    setDownloadSettingsOpen: (Boolean) -> Unit,
     model: SettingsUiState,
     refreshCatalog: () -> Unit,
     chooseSource: (String) -> Unit,
@@ -56,7 +58,6 @@ fun SettingsPage(
     var customName by remember { mutableStateOf("") }
     var customPrefix by remember { mutableStateOf("") }
     var addNotice by remember { mutableStateOf("") }
-    var downloadSettingsOpen by remember { mutableStateOf(false) }
     val available = DownloadSources.presets + model.customSources
     val newer = model.newVersion?.takeIf {
         SelfUpdater.isNewer(it.version, model.version)
@@ -65,17 +66,14 @@ fun SettingsPage(
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp,
-            bottom = if (downloadSettingsOpen) 420.dp else 30.dp),
+            bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item(key = "settings-title") {
             Column(Modifier.padding(bottom = 6.dp)) {
-                Text(if (downloadSettingsOpen) "下载与测速" else "设置", style = MaterialTheme.typography.headlineSmall)
-                if (downloadSettingsOpen) {
-                    OutlinedButton(onClick = { downloadSettingsOpen = false }) { Text("返回设置") }
-                }
-                Text(if (downloadSettingsOpen) "下载源、镜像测速与网络代理" else "应用目录、下载管理与更新",
-                    style = MaterialTheme.typography.bodySmall,
+                Text(if (downloadSettingsOpen) "下载源、镜像测速与网络代理"
+                    else "应用目录、项目推荐与版本更新",
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
@@ -99,7 +97,7 @@ fun SettingsPage(
         item(key = "downloads-menu") {
             SettingsPanel("下载与测速") {
                 Text("加速源、节点测速、自定义镜像与代理设置", style = MaterialTheme.typography.bodySmall)
-                Button(onClick = { downloadSettingsOpen = true }, modifier = Modifier.fillMaxWidth()) { Text("进入下载与测速") }
+                Button(onClick = { setDownloadSettingsOpen(true) }, modifier = Modifier.fillMaxWidth()) { Text("进入下载与测速") }
             }
         }
         item(key = "recommend-app") {
@@ -125,6 +123,34 @@ fun SettingsPage(
                 }
                 Text(model.speedText,
                     style = MaterialTheme.typography.bodySmall)
+            }
+        }
+        item(key = "proxy") {
+            SettingsPanel("网络代理") {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("自定义代理（默认关闭）")
+                        Text("仅本应用使用，不修改系统 VPN",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Switch(checked = model.proxyEnabled, onCheckedChange = setProxy)
+                }
+                if (model.proxyEnabled) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(selected = model.proxyType == "HTTP",
+                            onClick = { setProxyType("HTTP") }, label = { Text("HTTP") })
+                        FilterChip(selected = model.proxyType == "SOCKS5",
+                            onClick = { setProxyType("SOCKS5") }, label = { Text("SOCKS5") })
+                    }
+                    OutlinedTextField(model.proxyHost, setProxyHost,
+                        label = { Text("代理主机/IP") }, singleLine = true,
+                        modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(model.proxyPort, setProxyPort,
+                        label = { Text("代理端口") }, singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth())
+                }
             }
         }
         item(key = "source-auto") {
@@ -192,34 +218,6 @@ fun SettingsPage(
                 Text("第三方镜像仅在有官方 SHA-256 的情况下启用；测速是短时估算，不能保证长期速度。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-        item(key = "proxy") {
-            SettingsPanel("网络代理") {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text("自定义代理（默认关闭）")
-                        Text("仅本应用使用，不修改系统 VPN",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    Switch(checked = model.proxyEnabled, onCheckedChange = setProxy)
-                }
-                if (model.proxyEnabled) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FilterChip(selected = model.proxyType == "HTTP",
-                            onClick = { setProxyType("HTTP") }, label = { Text("HTTP") })
-                        FilterChip(selected = model.proxyType == "SOCKS5",
-                            onClick = { setProxyType("SOCKS5") }, label = { Text("SOCKS5") })
-                    }
-                    OutlinedTextField(model.proxyHost, setProxyHost,
-                        label = { Text("代理主机/IP") }, singleLine = true,
-                        modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(model.proxyPort, setProxyPort,
-                        label = { Text("代理端口") }, singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.fillMaxWidth())
-                }
             }
         }
         }
@@ -314,7 +312,7 @@ private fun MirrorItem(
             Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            RadioButton(selected = selected, onClick = onSelect)
+            RadioButton(selected = selected, onClick = null)
             Column(Modifier.weight(1f)) {
                 Text(name, style = MaterialTheme.typography.titleSmall)
                 Text(address, style = MaterialTheme.typography.bodySmall,

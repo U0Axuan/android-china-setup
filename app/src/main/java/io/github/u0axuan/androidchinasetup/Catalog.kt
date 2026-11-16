@@ -19,7 +19,8 @@ data class CatalogApp(
     val notice: String = "",
     val risk: String = "",
     val downloadMode: String = "auto",
-    val preferredApkRegex: String = ""
+    val preferredApkRegex: String = "",
+    val logoPath: String = ""
 ) {
     val canDownload: Boolean get() =
         repository.isNotBlank() && downloadMode == "auto" && risk != "high"
@@ -30,6 +31,13 @@ object Catalog {
     const val MAX_CATALOG_BYTES = 256 * 1024
     private val repoPattern = Regex("""^[A-Za-z0-9_.-]{1,100}/[A-Za-z0-9_.-]{1,100}$""")
     private val highRiskNames = setOf("GhostLock", "DirtyFrag", "KSuRoot")
+    /** Only checked-in upstream raster app icons; badges and README images are never guessed. */
+    fun validLogoPath(path: String): Boolean =
+        path.isBlank() || (path.length <= 220 &&
+            !path.startsWith("/") && !path.startsWith(".") &&
+            !path.contains("..") && !path.contains("//") &&
+            Regex("""[A-Za-z0-9_./-]+\.(png|webp|jpg|jpeg)""", RegexOption.IGNORE_CASE)
+                .matches(path))
 
     val categoryOrder = listOf(
         "日常与效率",
@@ -81,7 +89,8 @@ object Catalog {
                 notice = item.optString("notice"),
                 risk = item.optString("risk"),
                 downloadMode = item.optString("downloadMode", "auto"),
-                preferredApkRegex = item.optString("preferredApkRegex")
+                preferredApkRegex = item.optString("preferredApkRegex"),
+                logoPath = item.optString("logoPath")
             )
         }
         require(result.map { it.name }.distinct().size == result.size) { "应用名称重复" }
@@ -97,6 +106,8 @@ object Catalog {
                 app.downloadMode in setOf("auto", "external") &&
                 app.risk in setOf("", "caution", "high") &&
                 app.preferredApkRegex.length <= 160 &&
+                validLogoPath(app.logoPath) &&
+                (app.logoPath.isBlank() || app.repository.isNotBlank()) &&
                 (app.repository.isNotBlank() || app.downloadMode == "external") &&
                 (app.risk != "high" || app.downloadMode == "external") &&
                 (app.name !in highRiskNames || app.risk == "high")

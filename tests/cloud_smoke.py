@@ -120,8 +120,14 @@ try:
     # Browse first detail: compact readme snapshot and canonical project links.
     click("曦码输入法")
     root=dump("02_readme_sheet")
+    for attempt in range(5):
+        if matches(root,"阅读原项目 README 全文"): break
+        adb("shell","input","keyevent","4")
+        time.sleep(1)
+        click("曦码输入法")
+        root=dump("02_readme_retry_"+str(attempt))
     assert_check("Upstream README area displayed",bool(matches(root,"README")))
-    assert_check("README is cached or offline",bool(matches(root,"离线摘要")) or bool(matches(root,"GitHub 原文")))
+    assert_check("README is cached or offline",bool(matches(root,"离线摘要")) or bool(matches(root,"原文已排版")))
     assert_check("Original README link",bool(matches(root,"阅读原项目 README 全文")))
     assert_check("Original project link",bool(matches(root,"访问原项目",True)))
     shot("02_readme_snapshot")
@@ -193,10 +199,11 @@ try:
 
     click("源名称")
     adb("shell","input","text","MyMirror")
-    adb("shell","input","keyevent","4")
+    # KEYCODE_ENTER dismisses single-line input without navigating out of the submenu.
+    adb("shell","input","keyevent","66")
     click("HTTPS 镜像前缀")
     adb("shell","input","text","https://mirror.example.com")
-    adb("shell","input","keyevent","4")
+    adb("shell","input","keyevent","66")
     click("添加加速源")
     assert_check("Custom mirror persisted","mirror.example.com" in pref())
     shot("07_custom_source")
@@ -236,11 +243,11 @@ try:
             return None
         return switch
     toggle=None
-    for attempt in range(7):
+    for attempt in range(12):
         toggle=visible_proxy_switch("09_proxy_visible_"+str(attempt))
         if toggle is not None:
             break
-        swipe(True)
+        swipe(False if attempt < 6 else True)
     assert_check("Proxy toggle fully visible in safe touch area",toggle is not None)
     # Verify actual state, not that the tap command merely returned.
     if toggle.attrib.get("checked")!="true":
@@ -279,6 +286,15 @@ try:
     assert_check("Relaunch after preferences",bool(matches(dump("12_restart"),"Android China Setup")))
     assert_check("Custom source survives restart","mirror.example.com" in pref())
     shot("12_relaunch")
+    # Material 3 smoke: system dark theme and 140% text must not crash the catalog.
+    adb("shell", "cmd", "uimode", "night", "yes", check=False)
+    adb("shell", "settings", "put", "system", "font_scale", "1.4", check=False)
+    time.sleep(3)
+    assert_check("Dark theme and larger text keep catalog usable",
+        bool(matches(dump("13_dark_large_text"), "精选 Android 开源应用")))
+    shot("13_dark_large_text")
+    adb("shell", "settings", "put", "system", "font_scale", "1.0", check=False)
+    adb("shell", "cmd", "uimode", "night", "no", check=False)
 
 except Exception as exc:
     checks.append({"name":"blocking_error","passed":False,"note":repr(exc)})

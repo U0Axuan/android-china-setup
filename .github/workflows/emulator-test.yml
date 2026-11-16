@@ -2,6 +2,11 @@ name: Cloud Android Emulator Tests
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'app/**'
+      - 'tests/cloud_smoke.py'
+      - '.github/workflows/emulator-test.yml'
   push:
     branches: [main]
     paths:

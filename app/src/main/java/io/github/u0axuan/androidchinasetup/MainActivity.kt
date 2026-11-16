@@ -52,18 +52,19 @@ class MainActivity : ComponentActivity() {
         var apps by remember { mutableStateOf(initialApps) }
         val upstream = remember { UpstreamRepository(this) }
         var metadata by remember { mutableStateOf(initialApps.filter { it.repository.isNotBlank() }
-            .associate { it.repository to upstream.cached(it.repository) }) }
+            .associate { it.repository to upstream.cached(it.repository, it.logoPath) }) }
         val metadataPending = remember { mutableSetOf<String>() }
         val metadataSemaphore = remember { java.util.concurrent.Semaphore(4) }
-        fun loadMetadata(repository: String, readme: Boolean = false) {
-            if (repository.isBlank() || (!readme && !upstream.isStale(repository))) return
+        fun loadMetadata(repository: String, readme: Boolean = false, force: Boolean = false) {
+            if (repository.isBlank() || (!readme && !force && !upstream.isStale(repository))) return
             synchronized(metadataPending) {
                 if (!metadataPending.add(repository)) return
             }
             Thread {
                 metadataSemaphore.acquireUninterruptibly()
                 try {
-                    val result = upstream.update(repository, readme)
+                    val verifiedPath = apps.firstOrNull { it.repository == repository }?.logoPath.orEmpty()
+                    val result = upstream.update(repository, verifiedPath, readme)
                     runOnUiThread { metadata = metadata + (repository to result) }
                 } finally {
                     metadataSemaphore.release()
@@ -74,6 +75,7 @@ class MainActivity : ComponentActivity() {
         val downloader = remember { ApkDownloader(this) }
         val benchmark = remember { SourceBenchmarker() }
         var settingsOpen by remember { mutableStateOf(false) }
+        var downloadSettingsOpen by remember { mutableStateOf(false) }
         var detail by remember { mutableStateOf<CatalogApp?>(null) }
         var downloadBusy by remember { mutableStateOf(false) }
         var downloadPercent by remember { mutableIntStateOf(0) }
@@ -287,7 +289,9 @@ class MainActivity : ComponentActivity() {
         }
         LaunchedEffect(apps) {
             apps.filter { it.repository.isNotBlank() }.forEach {
-                if (upstream.isStale(it.repository)) loadMetadata(it.repository)
+                val pathChanged = upstream.cached(it.repository, it.logoPath).logoPath != it.logoPath
+                if (upstream.isStale(it.repository) || pathChanged)
+                    loadMetadata(it.repository, force = pathChanged)
             }
         }
         LaunchedEffect(detail?.repository) {
@@ -295,7 +299,9 @@ class MainActivity : ComponentActivity() {
                 if (metadata[repository]?.readme.isNullOrBlank()) loadMetadata(repository, true)
             }
         }
-        BackHandler(settingsOpen) { settingsOpen = false }
+        BackHandler(settingsOpen) {
+            if (downloadSettingsOpen) downloadSettingsOpen = false else settingsOpen = false
+        }
 
         Scaffold(
             topBar = {
@@ -311,7 +317,8 @@ class MainActivity : ComponentActivity() {
                                 Spacer(Modifier.width(8.dp))
                             }
                             Text(
-                                if (settingsOpen) "设置" else "Android China Setup",
+                                if (downloadSettingsOpen && settingsOpen) "下载与测速"
+                                else if (settingsOpen) "设置" else "Android China Setup",
                                 maxLines = 1, overflow = TextOverflow.Ellipsis,
                                 style = MaterialTheme.typography.titleLarge
                             )
@@ -319,8 +326,11 @@ class MainActivity : ComponentActivity() {
                     },
                     navigationIcon = {
                         if (settingsOpen) {
-                            IconButton(onClick = { settingsOpen = false }) {
-                                Icon(Icons.Default.ArrowBack, contentDescription = "返回应用列表")
+                            IconButton(onClick = {
+                                if (downloadSettingsOpen) downloadSettingsOpen = false else settingsOpen = false
+                            }) {
+                                Icon(Icons.Default.ArrowBack,
+                                    contentDescription = if (downloadSettingsOpen) "返回设置" else "返回应用列表")
                             }
                         }
                     },
@@ -346,6 +356,8 @@ class MainActivity : ComponentActivity() {
                     )
                 } else {
                     SettingsPage(
+                        downloadSettingsOpen = downloadSettingsOpen,
+                        setDownloadSettingsOpen = { downloadSettingsOpen = it },
                         model = SettingsUiState(
                             catalogCount = apps.size,
                             catalogStatus = catalogStatus,

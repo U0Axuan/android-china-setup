@@ -24,7 +24,7 @@ HIGH_RISK = {"GhostLock", "DirtyFrag", "KSuRoot"}
 ALLOWED = {
     "name", "category", "summary", "readmeSnapshot", "homepage",
     "readmeUrl", "repository", "notice", "risk", "downloadMode",
-    "preferredApkRegex"
+    "preferredApkRegex", "logoPath"
 }
 LIMIT_BYTES = 256 * 1024
 
@@ -86,6 +86,13 @@ def validate(data):
             raise ValueError(f"{name} 为高风险项目，必须仅提供外部入口")
         if len(app.get("notice", "")) > 200:
             raise ValueError(f"{name} 的风险提醒过长")
+        logo = app.get("logoPath", "")
+        if not isinstance(logo, str) or (logo and (
+            len(logo) > 220 or logo.startswith(("/", ".")) or
+            ".." in logo or "//" in logo or
+            not re.fullmatch(r"[A-Za-z0-9_./-]+\.(?:png|webp|jpg|jpeg)", logo, re.I) or
+            not repo)):
+            raise ValueError(f"{name} 的 logoPath 必须是原仓库内已核实的图片路径")
         regex = app.get("preferredApkRegex", "")
         if not isinstance(regex, str) or len(regex) > 160:
             raise ValueError(f"{name} 的 APK 匹配规则无效")
@@ -121,6 +128,8 @@ def add(data, args):
                   homepage=homepage, readmeUrl=readme)
     if repo:
         result["repository"] = repo
+    if getattr(args, "logo_path", ""):
+        result["logoPath"] = args.logo_path
     if mode != "auto":
         result["downloadMode"] = mode
     if args.risk:
@@ -193,6 +202,7 @@ def main():
     cmd.add_argument("--risk", choices=["","caution","high"], default="")
     cmd.add_argument("--notice", default="")
     cmd.add_argument("--apk-regex", default="", help="Exact official APK asset filename regex")
+    cmd.add_argument("--logo-path", default="", help="Verified official repo-relative raster app icon, or omit")
     args = parser.parse_args()
 
     if args.command == "selftest":
