@@ -7,7 +7,8 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /** Image identities are editorially verified. README images are never used as app icons. */
-data class UpstreamInfo(val stars: Int? = null, val logo: String = "", val readme: String = "")
+data class UpstreamInfo(val stars: Int? = null, val logo: String = "",
+    val readme: String = "", val logoPath: String = "")
 
 class UpstreamRepository(private val context: Context) {
     // v2 intentionally invalidates the old cache which contained guessed badges/screenshots.
@@ -24,7 +25,8 @@ class UpstreamRepository(private val context: Context) {
                 stars = obj.optInt("stars").takeIf { it >= 0 },
                 logo = obj.optString("logo").takeIf { logoPath.isNotBlank() &&
                     obj.optString("iconPath") == logoPath }.orEmpty(),
-                readme = obj.optString("readme")
+                readme = obj.optString("readme"),
+                logoPath = obj.optString("iconPath")
             )
         }.getOrDefault(UpstreamInfo())
     }
@@ -93,7 +95,7 @@ class UpstreamRepository(private val context: Context) {
         val logo = if (logoPath.isBlank()) "" else old.logo.ifBlank {
             verifyCuratedIcon(repo, branch, logoPath)
         }
-        val info = UpstreamInfo(meta.optInt("stargazers_count").takeIf { it >= 0 }, logo, readme)
+        val info = UpstreamInfo(meta.optInt("stargazers_count").takeIf { it >= 0 }, logo, readme, logoPath)
         synchronized(lock) {
             prefs.edit().putString(key(repo), JSONObject()
                 .put("stars", info.stars ?: -1)
