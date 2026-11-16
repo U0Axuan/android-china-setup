@@ -49,6 +49,8 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.3")
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation("org.commonmark:commonmark:0.32.0")
+    implementation("org.jsoup:jsoup:1.24.1")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20240303")
 }
