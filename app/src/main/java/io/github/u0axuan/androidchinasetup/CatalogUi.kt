@@ -180,7 +180,8 @@ fun CatalogDetail(
 ) {
     val parts = remember(upstream?.readme) { ReadmeDocument.parse(upstream?.readme.orEmpty()) }
     val maxHeight = (LocalConfiguration.current.screenHeightDp * 0.88f).dp
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
         LazyColumn(
             modifier = Modifier.fillMaxWidth().heightIn(max = maxHeight),
             contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 36.dp),
