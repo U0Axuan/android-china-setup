@@ -75,6 +75,7 @@ class MainActivity : ComponentActivity() {
         val downloader = remember { ApkDownloader(this) }
         val benchmark = remember { SourceBenchmarker() }
         var settingsOpen by remember { mutableStateOf(false) }
+        var downloadSettingsOpen by remember { mutableStateOf(false) }
         var detail by remember { mutableStateOf<CatalogApp?>(null) }
         var downloadBusy by remember { mutableStateOf(false) }
         var downloadPercent by remember { mutableIntStateOf(0) }
@@ -296,7 +297,9 @@ class MainActivity : ComponentActivity() {
                 if (metadata[repository]?.readme.isNullOrBlank()) loadMetadata(repository, true)
             }
         }
-        BackHandler(settingsOpen) { settingsOpen = false }
+        BackHandler(settingsOpen) {
+            if (downloadSettingsOpen) downloadSettingsOpen = false else settingsOpen = false
+        }
 
         Scaffold(
             topBar = {
@@ -312,7 +315,8 @@ class MainActivity : ComponentActivity() {
                                 Spacer(Modifier.width(8.dp))
                             }
                             Text(
-                                if (settingsOpen) "设置" else "Android China Setup",
+                                if (downloadSettingsOpen && settingsOpen) "下载与测速"
+                                else if (settingsOpen) "设置" else "Android China Setup",
                                 maxLines = 1, overflow = TextOverflow.Ellipsis,
                                 style = MaterialTheme.typography.titleLarge
                             )
@@ -320,8 +324,11 @@ class MainActivity : ComponentActivity() {
                     },
                     navigationIcon = {
                         if (settingsOpen) {
-                            IconButton(onClick = { settingsOpen = false }) {
-                                Icon(Icons.Default.ArrowBack, contentDescription = "返回应用列表")
+                            IconButton(onClick = {
+                                if (downloadSettingsOpen) downloadSettingsOpen = false else settingsOpen = false
+                            }) {
+                                Icon(Icons.Default.ArrowBack,
+                                    contentDescription = if (downloadSettingsOpen) "返回设置" else "返回应用列表")
                             }
                         }
                     },
@@ -347,6 +354,8 @@ class MainActivity : ComponentActivity() {
                     )
                 } else {
                     SettingsPage(
+                        downloadSettingsOpen = downloadSettingsOpen,
+                        setDownloadSettingsOpen = { downloadSettingsOpen = it },
                         model = SettingsUiState(
                             catalogCount = apps.size,
                             catalogStatus = catalogStatus,
