@@ -2,22 +2,28 @@ package io.github.u0axuan.androidchinasetup
 
 import android.os.Build
 import coil.compose.AsyncImage
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
@@ -124,25 +130,16 @@ private fun CatalogRow(
     ) {
         Row(Modifier.padding(start = 12.dp, top = 12.dp, end = 10.dp, bottom = 12.dp),
             verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                Modifier.size(42.dp).clip(RoundedCornerShape(13.dp))
-                    .background(if (app.risk == "high")
-                        MaterialTheme.colorScheme.errorContainer
-                    else MaterialTheme.colorScheme.secondaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                if (!upstream?.logo.isNullOrBlank()) {
-                    AsyncImage(model = upstream?.logo, contentDescription = app.name + " 原项目标识",
-                        modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)))
-                } else {
-                    Text(app.name.take(1), style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = if (app.risk == "high")
-                            MaterialTheme.colorScheme.onErrorContainer
-                        else MaterialTheme.colorScheme.onSecondaryContainer)
-                }
+            var iconFailed by remember(upstream?.logo) { mutableStateOf(false) }
+            if (!upstream?.logo.isNullOrBlank() && !iconFailed) {
+                AsyncImage(
+                    model = upstream?.logo,
+                    contentDescription = null,
+                    onError = { iconFailed = true },
+                    modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp))
+                )
+                Spacer(Modifier.width(12.dp))
             }
-            Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 Text(app.name, style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold, maxLines = 1,
@@ -161,9 +158,11 @@ private fun CatalogRow(
             }
             Spacer(Modifier.width(4.dp))
             if (app.canDownload) {
-                TextButton(onClick = { onDownload(app) }, enabled = !busy) { Text("下载") }
+                TextButton(onClick = { onDownload(app) }, enabled = !busy,
+                    modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)) { Text("下载") }
             } else {
-                TextButton(onClick = { onDetails(app) }) { Text("查看") }
+                TextButton(onClick = { onDetails(app) },
+                    modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)) { Text("查看") }
             }
         }
     }
@@ -176,57 +175,121 @@ fun CatalogDetail(
     onDismiss: () -> Unit, onDownload: (CatalogApp) -> Unit,
     openUrl: (String) -> Unit
 ) {
+    val parts = remember(upstream?.readme) { ReadmeDocument.parse(upstream?.readme.orEmpty()) }
+    val maxHeight = (LocalConfiguration.current.screenHeightDp * 0.88f).dp
     ModalBottomSheet(onDismissRequest = onDismiss) {
-        Column(
-            Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
-                .padding(start = 20.dp, end = 20.dp, bottom = 36.dp),
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth().heightIn(max = maxHeight),
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 36.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(app.category, color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.labelMedium)
-            Text(app.name, style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold)
-            Text(app.summary, style = MaterialTheme.typography.bodyLarge)
-            upstream?.stars?.let {
-                Text("★ $it GitHub Stars", style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary)
+            item(key = "project-summary") {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(app.category, style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary)
+                    Text(app.name, style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.SemiBold)
+                    Text(app.summary, style = MaterialTheme.typography.bodyLarge)
+                    upstream?.stars?.let {
+                        Text("★ " + it + " GitHub Stars",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    if (app.notice.isNotBlank()) {
+                        Text(app.notice, style = MaterialTheme.typography.bodyMedium,
+                            color = if (app.risk == "high") MaterialTheme.colorScheme.error
+                                else MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    if (app.canDownload) {
+                        Button(onClick = { onDownload(app) }, enabled = !busy,
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                            Text("下载官方 APK")
+                        }
+                    } else if (app.risk == "high") {
+                        Text("高风险系统工具仅展示原项目，不在本工具内自动下载或运行提权程序。",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error)
+                    }
+                    OutlinedButton(onClick = { openUrl(app.readmeUrl) },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        Text("阅读原项目 README 全文")
+                    }
+                    OutlinedButton(onClick = { openUrl(app.homepage) },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                        Text("访问原项目")
+                    }
+                    HorizontalDivider()
+                    Text(if (parts.isEmpty()) "README 快照" else "原作者 README",
+                        style = MaterialTheme.typography.titleMedium)
+                    Text(if (parts.isEmpty()) "离线摘要" else "原文已排版 · 已省略网页徽章与图片",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
-            if (app.notice.isNotBlank()) {
-                Text(app.notice, style = MaterialTheme.typography.bodySmall,
-                    color = if (app.risk == "high") MaterialTheme.colorScheme.error
-                            else MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            OutlinedButton(onClick = { openUrl(app.readmeUrl) },
-                modifier = Modifier.fillMaxWidth()) { Text("阅读原项目 README 全文") }
-            OutlinedButton(onClick = { openUrl(app.homepage) },
-                modifier = Modifier.fillMaxWidth()) { Text("访问原项目") }
-            HorizontalDivider()
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(if (upstream?.readme.isNullOrBlank()) "README 快照" else "原作者 README",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.width(8.dp))
-                Text(if (upstream?.readme.isNullOrBlank()) "离线摘要" else "GitHub 原文 · 缓存",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            Surface(shape = MaterialTheme.shapes.medium,
-                color = MaterialTheme.colorScheme.surfaceContainerLow) {
-                Text(upstream?.readme?.takeIf { it.isNotBlank() } ?: app.readmeSnapshot,
-                    Modifier.fillMaxWidth().padding(16.dp),
-                    style = MaterialTheme.typography.bodyMedium)
-            }
-            if (app.canDownload) {
-                Button(onClick = { onDownload(app) }, enabled = !busy,
-                    modifier = Modifier.fillMaxWidth()) { Text("下载官方 APK") }
+            if (parts.isEmpty()) {
+                item(key = "offline-readme") {
+                    Surface(shape = MaterialTheme.shapes.medium,
+                        color = MaterialTheme.colorScheme.surfaceContainerLow) {
+                        SelectionContainer {
+                            Text(app.readmeSnapshot, Modifier.fillMaxWidth().padding(16.dp),
+                                style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
             } else {
-                Text(
-                    if (app.risk == "high")
-                        "高风险系统工具仅展示原项目，不在本工具内自动下载或运行提权程序。"
-                    else "该项目使用官方网站分发，请前往原项目获取安装包。",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                items(parts.size, key = { "readme-" + it }) { index ->
+                    ReadmePartItem(parts[index])
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun ReadmePartItem(part: ReadmePart) {
+    when (part.type) {
+        ReadmePart.Type.HEADING -> {
+            val typography = MaterialTheme.typography
+            Text(part.text,
+                style = when (part.depth) {
+                    1 -> typography.titleLarge
+                    2 -> typography.titleMedium
+                    else -> typography.titleSmall
+                },
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface)
+        }
+        ReadmePart.Type.CODE -> {
+            Surface(shape = MaterialTheme.shapes.small,
+                color = MaterialTheme.colorScheme.surfaceContainerLow) {
+                SelectionContainer {
+                    Text(part.text,
+                        modifier = Modifier.fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()).padding(12.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontFamily = FontFamily.Monospace)
+                }
+            }
+        }
+        ReadmePart.Type.QUOTE -> {
+            Surface(shape = MaterialTheme.shapes.small,
+                color = MaterialTheme.colorScheme.surfaceContainerLow) {
+                SelectionContainer {
+                    Text(part.text, Modifier.fillMaxWidth().padding(12.dp),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+        ReadmePart.Type.RULE -> HorizontalDivider()
+        ReadmePart.Type.BULLET -> SelectionContainer {
+            Text(part.text,
+                Modifier.fillMaxWidth().padding(start = ((part.depth - 1).coerceIn(0, 3) * 12).dp),
+                style = MaterialTheme.typography.bodyMedium)
+        }
+        ReadmePart.Type.PARAGRAPH -> SelectionContainer {
+            Text(part.text, style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface)
         }
     }
 }
