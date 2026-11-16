@@ -1,6 +1,7 @@
 package io.github.u0axuan.androidchinasetup
 
 import androidx.compose.foundation.layout.*
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -57,6 +58,7 @@ fun SettingsPage(
     var customPrefix by remember { mutableStateOf("") }
     var addNotice by remember { mutableStateOf("") }
     var downloadSettingsOpen by remember { mutableStateOf(false) }
+    BackHandler(enabled = downloadSettingsOpen) { downloadSettingsOpen = false }
     val available = DownloadSources.presets + model.customSources
     val newer = model.newVersion?.takeIf {
         SelfUpdater.isNewer(it.version, model.version)
@@ -65,7 +67,7 @@ fun SettingsPage(
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp,
-            bottom = if (downloadSettingsOpen) 420.dp else 30.dp),
+            bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item(key = "settings-title") {
@@ -125,6 +127,34 @@ fun SettingsPage(
                 }
                 Text(model.speedText,
                     style = MaterialTheme.typography.bodySmall)
+            }
+        }
+        item(key = "proxy") {
+            SettingsPanel("网络代理") {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("自定义代理（默认关闭）")
+                        Text("仅本应用使用，不修改系统 VPN",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Switch(checked = model.proxyEnabled, onCheckedChange = setProxy)
+                }
+                if (model.proxyEnabled) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(selected = model.proxyType == "HTTP",
+                            onClick = { setProxyType("HTTP") }, label = { Text("HTTP") })
+                        FilterChip(selected = model.proxyType == "SOCKS5",
+                            onClick = { setProxyType("SOCKS5") }, label = { Text("SOCKS5") })
+                    }
+                    OutlinedTextField(model.proxyHost, setProxyHost,
+                        label = { Text("代理主机/IP") }, singleLine = true,
+                        modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(model.proxyPort, setProxyPort,
+                        label = { Text("代理端口") }, singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth())
+                }
             }
         }
         item(key = "source-auto") {
@@ -192,34 +222,6 @@ fun SettingsPage(
                 Text("第三方镜像仅在有官方 SHA-256 的情况下启用；测速是短时估算，不能保证长期速度。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-        item(key = "proxy") {
-            SettingsPanel("网络代理") {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text("自定义代理（默认关闭）")
-                        Text("仅本应用使用，不修改系统 VPN",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    Switch(checked = model.proxyEnabled, onCheckedChange = setProxy)
-                }
-                if (model.proxyEnabled) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FilterChip(selected = model.proxyType == "HTTP",
-                            onClick = { setProxyType("HTTP") }, label = { Text("HTTP") })
-                        FilterChip(selected = model.proxyType == "SOCKS5",
-                            onClick = { setProxyType("SOCKS5") }, label = { Text("SOCKS5") })
-                    }
-                    OutlinedTextField(model.proxyHost, setProxyHost,
-                        label = { Text("代理主机/IP") }, singleLine = true,
-                        modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(model.proxyPort, setProxyPort,
-                        label = { Text("代理端口") }, singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.fillMaxWidth())
-                }
             }
         }
         }
@@ -314,7 +316,7 @@ private fun MirrorItem(
             Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            RadioButton(selected = selected, onClick = onSelect)
+            RadioButton(selected = selected, onClick = null)
             Column(Modifier.weight(1f)) {
                 Text(name, style = MaterialTheme.typography.titleSmall)
                 Text(address, style = MaterialTheme.typography.bodySmall,
