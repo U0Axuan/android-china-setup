@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
         var apps by remember { mutableStateOf(initialApps) }
         val upstream = remember { UpstreamRepository(this) }
         var metadata by remember { mutableStateOf(initialApps.filter { it.repository.isNotBlank() }
-            .associate { it.repository to upstream.cached(it.repository) }) }
+            .associate { it.repository to upstream.cached(it.repository, it.logoPath) }) }
         val metadataPending = remember { mutableSetOf<String>() }
         val metadataSemaphore = remember { java.util.concurrent.Semaphore(4) }
         fun loadMetadata(repository: String, readme: Boolean = false) {
@@ -63,7 +63,8 @@ class MainActivity : ComponentActivity() {
             Thread {
                 metadataSemaphore.acquireUninterruptibly()
                 try {
-                    val result = upstream.update(repository, readme)
+                    val verifiedPath = apps.firstOrNull { it.repository == repository }?.logoPath.orEmpty()
+                    val result = upstream.update(repository, verifiedPath, readme)
                     runOnUiThread { metadata = metadata + (repository to result) }
                 } finally {
                     metadataSemaphore.release()
