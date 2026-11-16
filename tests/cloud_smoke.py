@@ -199,10 +199,11 @@ try:
 
     click("源名称")
     adb("shell","input","text","MyMirror")
-    adb("shell","input","keyevent","4")
+    # KEYCODE_ENTER dismisses single-line input without navigating out of the submenu.
+    adb("shell","input","keyevent","66")
     click("HTTPS 镜像前缀")
     adb("shell","input","text","https://mirror.example.com")
-    adb("shell","input","keyevent","4")
+    adb("shell","input","keyevent","66")
     click("添加加速源")
     assert_check("Custom mirror persisted","mirror.example.com" in pref())
     shot("07_custom_source")
