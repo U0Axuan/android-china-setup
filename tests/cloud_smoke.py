@@ -120,6 +120,12 @@ try:
     # Browse first detail: compact readme snapshot and canonical project links.
     click("曦码输入法")
     root=dump("02_readme_sheet")
+    for attempt in range(5):
+        if matches(root,"阅读原项目 README 全文"): break
+        adb("shell","input","keyevent","4")
+        time.sleep(1)
+        click("曦码输入法")
+        root=dump("02_readme_retry_"+str(attempt))
     assert_check("Upstream README area displayed",bool(matches(root,"README")))
     assert_check("README is cached or offline",bool(matches(root,"离线摘要")) or bool(matches(root,"GitHub 原文")))
     assert_check("Original README link",bool(matches(root,"阅读原项目 README 全文")))
