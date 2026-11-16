@@ -1,7 +1,6 @@
 package io.github.u0axuan.androidchinasetup
 
 import androidx.compose.foundation.layout.*
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,6 +38,8 @@ data class SettingsUiState(
 
 @Composable
 fun SettingsPage(
+    downloadSettingsOpen: Boolean,
+    setDownloadSettingsOpen: (Boolean) -> Unit,
     model: SettingsUiState,
     refreshCatalog: () -> Unit,
     chooseSource: (String) -> Unit,
@@ -57,8 +58,6 @@ fun SettingsPage(
     var customName by remember { mutableStateOf("") }
     var customPrefix by remember { mutableStateOf("") }
     var addNotice by remember { mutableStateOf("") }
-    var downloadSettingsOpen by remember { mutableStateOf(false) }
-    BackHandler(enabled = downloadSettingsOpen) { downloadSettingsOpen = false }
     val available = DownloadSources.presets + model.customSources
     val newer = model.newVersion?.takeIf {
         SelfUpdater.isNewer(it.version, model.version)
@@ -74,7 +73,7 @@ fun SettingsPage(
             Column(Modifier.padding(bottom = 6.dp)) {
                 Text(if (downloadSettingsOpen) "下载与测速" else "设置", style = MaterialTheme.typography.headlineSmall)
                 if (downloadSettingsOpen) {
-                    OutlinedButton(onClick = { downloadSettingsOpen = false }) { Text("返回设置") }
+                    OutlinedButton(onClick = { setDownloadSettingsOpen(false) }) { Text("返回设置") }
                 }
                 Text(if (downloadSettingsOpen) "下载源、镜像测速与网络代理" else "应用目录、下载管理与更新",
                     style = MaterialTheme.typography.bodySmall,
@@ -101,7 +100,7 @@ fun SettingsPage(
         item(key = "downloads-menu") {
             SettingsPanel("下载与测速") {
                 Text("加速源、节点测速、自定义镜像与代理设置", style = MaterialTheme.typography.bodySmall)
-                Button(onClick = { downloadSettingsOpen = true }, modifier = Modifier.fillMaxWidth()) { Text("进入下载与测速") }
+                Button(onClick = { setDownloadSettingsOpen(true) }, modifier = Modifier.fillMaxWidth()) { Text("进入下载与测速") }
             }
         }
         item(key = "recommend-app") {
