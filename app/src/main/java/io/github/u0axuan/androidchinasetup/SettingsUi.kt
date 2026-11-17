@@ -1,5 +1,6 @@
 package io.github.u0axuan.androidchinasetup
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -305,15 +306,16 @@ private fun MirrorItem(
         color = if (selected) MaterialTheme.colorScheme.primaryContainer
                 else MaterialTheme.colorScheme.surfaceContainerLow,
         shape = MaterialTheme.shapes.medium,
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onSelect
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            RadioButton(selected = selected, onClick = null)
-            Column(Modifier.weight(1f)) {
+            RadioButton(selected = selected, onClick = onSelect)
+            Column(Modifier.weight(1f).sizeIn(minHeight = 48.dp)
+                .clickable(onClickLabel = "选择下载源：" + name, onClick = onSelect),
+                verticalArrangement = Arrangement.Center) {
                 Text(name, style = MaterialTheme.typography.titleSmall)
                 Text(address, style = MaterialTheme.typography.bodySmall,
                     maxLines = 1, overflow = TextOverflow.Ellipsis,
@@ -332,7 +334,8 @@ private fun MirrorItem(
                 }
             }
             if (onDelete != null) {
-                TextButton(onClick = onDelete) { Text("删除") }
+                TextButton(onClick = onDelete,
+                    modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)) { Text("删除") }
             }
         }
     }
