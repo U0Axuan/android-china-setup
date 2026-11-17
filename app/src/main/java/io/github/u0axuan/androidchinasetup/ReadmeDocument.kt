@@ -28,10 +28,54 @@ data class ReadmePart(val type: Type, val text: String = "", val depth: Int = 0)
 object ReadmeDocument {
     private val parser = Parser.builder().build()
 
+    private val forbiddenHtml =
+        "script,style,iframe,object,embed,svg,img,picture,source,video,form,button,nav,canvas"
+
     private fun htmlText(raw: String): String {
         val doc = Jsoup.parseBodyFragment(raw)
-        doc.select("script,style,iframe,object,embed,svg,img,picture,source,video,form,button,nav").remove()
-        return doc.body().text()
+        doc.select(forbiddenHtml).remove()
+        return doc.body().text().replace(Regex("[ \t]{2,}"), " ").trim()
+    }
+
+    /** Preserve the meaning of authored HTML blocks without rendering active HTML. */
+    private fun htmlParts(raw: String, add: (ReadmePart.Type, String, Int) -> Unit) {
+        val doc = Jsoup.parseBodyFragment(raw)
+        doc.select(forbiddenHtml).remove()
+        fun walk(element: org.jsoup.nodes.Element, depth: Int = 0) {
+            when (element.normalName()) {
+                "h1", "h2", "h3", "h4", "h5", "h6" ->
+                    add(ReadmePart.Type.HEADING, element.text(),
+                        element.normalName().last().digitToIntOrNull() ?: 3)
+                "p", "summary" -> add(ReadmePart.Type.PARAGRAPH, element.text(), depth)
+                "pre" -> add(ReadmePart.Type.CODE, element.wholeText(), depth)
+                "blockquote" -> add(ReadmePart.Type.QUOTE, element.text(), depth)
+                "hr" -> add(ReadmePart.Type.RULE, "", depth)
+                "table" -> element.select("tr").take(40).forEach { row ->
+                    val cols = row.select("th,td").take(8).map { it.text().trim() }
+                        .filter { it.isNotBlank() }
+                    if (cols.isNotEmpty()) add(ReadmePart.Type.BULLET, cols.joinToString("  |  "), depth)
+                }
+                "ul", "ol" -> element.children().filter { it.normalName() == "li" }
+                    .take(60).forEachIndexed { index, item ->
+                        val marker = if (element.normalName() == "ol") (index + 1).toString() + ". "
+                            else "• "
+                        add(ReadmePart.Type.BULLET, marker + item.text(), depth + 1)
+                    }
+                "br" -> Unit
+                else -> {
+                    val children = element.children()
+                    if (children.isEmpty()) {
+                        add(ReadmePart.Type.PARAGRAPH, element.text(), depth)
+                    } else if (element.normalName() in setOf(
+                            "body", "div", "section", "article", "details")) {
+                        val own = element.ownText().trim()
+                        if (own.isNotBlank()) add(ReadmePart.Type.PARAGRAPH, own, depth)
+                        children.forEach { walk(it, depth) }
+                    } else add(ReadmePart.Type.PARAGRAPH, element.text(), depth)
+                }
+            }
+        }
+        walk(doc.body())
     }
 
     private fun inline(parent: Node): String {
@@ -77,7 +121,7 @@ object ReadmeDocument {
                 is Heading -> add(ReadmePart.Type.HEADING, inline(node), node.level)
                 is Paragraph -> add(if (listPrefix.isNotBlank()) ReadmePart.Type.BULLET
                     else ReadmePart.Type.PARAGRAPH, listPrefix + inline(node), depth)
-                is HtmlBlock -> add(ReadmePart.Type.PARAGRAPH, htmlText(node.literal))
+                is HtmlBlock -> htmlParts(node.literal, ::add)
                 is FencedCodeBlock -> add(ReadmePart.Type.CODE, node.literal.trimEnd())
                 is IndentedCodeBlock -> add(ReadmePart.Type.CODE, node.literal.trimEnd())
                 is BlockQuote -> {

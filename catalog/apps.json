@@ -52,6 +52,18 @@
     "preferredApkRegex": "^TagMacro-v[0-9.]+\\.apk$"
   },
   {
+    "name": "DSH Go",
+    "category": "日常与效率",
+    "summary": "DeepSeek Harness 安卓客户端，可在手机运行引擎，也可连接电脑或服务器。",
+    "readmeSnapshot": "第三方 DeepSeek Harness 客户端，内置 Linux 运行环境，无需 Root 或另装 Termux；支持本机引擎、SSH 远程连接、对话与工具审批。模型请求由用户配置的模型服务提供方处理，并非手机本地运行大模型。",
+    "homepage": "https://github.com/ccch1mneyyy/dsh-Go",
+    "readmeUrl": "https://github.com/ccch1mneyyy/dsh-Go#readme",
+    "repository": "ccch1mneyyy/dsh-Go",
+    "logoPath": "app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+    "risk": "caution",
+    "notice": "Android 8.0+；当前官方主发行包为 ARM64，x86_64 请到原项目选择对应版本，不提供 32 位 ARM 构建。首次本机部署需下载运行环境。手机操控需无障碍等权限；不打扰模式需 Android 14+ 及 Shizuku 或自连 ADB，请按需授权。"
+  },
+  {
     "name": "BiliPai",
     "category": "游戏与影音",
     "summary": "面向 Bilibili 的第三方视频客户端。",
@@ -92,8 +104,7 @@
     "repository": "Pilipala9919/MarcoMovie",
     "downloadMode": "auto",
     "notice": "仅提供播放器，内容源及版权请自行核验。",
-    "preferredApkRegex": "^MarcoMovie-[0-9.]+-android-mobile\\.apk$",
-    "logoPath": "docs/images/app-icon-512.png"
+    "preferredApkRegex": "^MarcoMovie-[0-9.]+-android-mobile\\.apk$"
   },
   {
     "name": "MeiloX",
@@ -105,8 +116,7 @@
     "repository": "MeiloX/MeiloX",
     "downloadMode": "auto",
     "notice": "非官方客户端；部分音源受服务条款及版权限制。",
-    "preferredApkRegex": "^app-release\\.apk$",
-    "logoPath": "screenshot/logo.png"
+    "preferredApkRegex": "^app-release\\.apk$"
   },
   {
     "name": "FuoEvolve",
@@ -137,8 +147,7 @@
     "readmeSnapshot": "LocalSend 为跨平台开源文件传输工具，设备在同一局域网内即可共享文件；支持 Android、桌面等平台。",
     "homepage": "https://github.com/localsend/localsend",
     "readmeUrl": "https://github.com/localsend/localsend#readme",
-    "repository": "localsend/localsend",
-    "logoPath": "app/assets/img/logo-256.png"
+    "repository": "localsend/localsend"
   },
   {
     "name": "云析（YunX）",
@@ -150,8 +159,7 @@
     "repository": "CYQawa/YunX",
     "downloadMode": "auto",
     "notice": "仅处理有权访问的资源，第三方服务接口可能发生变化。",
-    "preferredApkRegex": "^YunX_release_[0-9.]+\\.apk$",
-    "logoPath": "app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp"
+    "preferredApkRegex": "^YunX_release_[0-9.]+\\.apk$"
   },
   {
     "name": "Obtainium",
@@ -160,8 +168,7 @@
     "readmeSnapshot": "Obtainium 从 GitHub 等开发者发布源跟踪应用版本，可管理非应用商店分发的开源 APK。",
     "homepage": "https://github.com/ImranR98/Obtainium",
     "readmeUrl": "https://github.com/ImranR98/Obtainium#readme",
-    "repository": "ImranR98/Obtainium",
-    "logoPath": "assets/graphics/icon_small.png"
+    "repository": "ImranR98/Obtainium"
   },
   {
     "name": "F-Droid",
@@ -189,8 +196,7 @@
     "readmeSnapshot": "Shizuku 允许应用通过其服务调用部分 Android 系统 API，使用前需要按官方说明授权及启动服务；不等同于 Root。",
     "homepage": "https://github.com/RikkaApps/Shizuku",
     "readmeUrl": "https://github.com/RikkaApps/Shizuku#readme",
-    "repository": "RikkaApps/Shizuku",
-    "logoPath": "manager/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
+    "repository": "RikkaApps/Shizuku"
   },
   {
     "name": "Canta",
@@ -215,8 +221,7 @@
     "repository": "Eynnzerr/TelemetryCleaner",
     "downloadMode": "auto",
     "notice": "卸载系统组件可能影响通信、录音等功能；操作前请确认兼容性。",
-    "preferredApkRegex": "^TelemetryCleaner-v[0-9.]+\\.apk$",
-    "logoPath": "app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp"
+    "preferredApkRegex": "^TelemetryCleaner-v[0-9.]+\\.apk$"
   },
   {
     "name": "GhostLock",

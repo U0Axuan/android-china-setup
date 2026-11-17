@@ -34,10 +34,10 @@ object Catalog {
     /** Only checked-in upstream raster app icons; badges and README images are never guessed. */
     fun validLogoPath(path: String): Boolean =
         path.isBlank() || (path.length <= 220 &&
-            !path.startsWith("/") && !path.startsWith(".") &&
-            !path.contains("..") && !path.contains("//") &&
-            Regex("""[A-Za-z0-9_./-]+\.(png|webp|jpg|jpeg)""", RegexOption.IGNORE_CASE)
-                .matches(path))
+            !path.startsWith("/") && !path.contains("..") && !path.contains("//") &&
+            Regex("""(?:[A-Za-z0-9_./-]+/)?(?:mipmap|drawable)-[a-z0-9_-]+/(?:ic_launcher|launcher_icon)(?:_round)?\.(?:png|webp)""",
+                RegexOption.IGNORE_CASE).matches(path))
+
 
     val categoryOrder = listOf(
         "日常与效率",
