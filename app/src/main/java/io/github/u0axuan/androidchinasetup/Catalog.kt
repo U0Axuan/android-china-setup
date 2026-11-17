@@ -35,7 +35,7 @@ object Catalog {
     fun validLogoPath(path: String): Boolean =
         path.isBlank() || (path.length <= 220 &&
             !path.startsWith("/") && !path.contains("..") && !path.contains("//") &&
-            Regex("""(?:[A-Za-z0-9_./-]+/)?(?:mipmap|drawable)-[a-z0-9_-]+/(?:ic_launcher|launcher_icon)(?:_round)?\\.(?:png|webp)""",
+            Regex("""(?:[A-Za-z0-9_./-]+/)?(?:mipmap|drawable)-[a-z0-9_-]+/(?:ic_launcher|launcher_icon)(?:_round)?\.(?:png|webp)""",
                 RegexOption.IGNORE_CASE).matches(path))
 
 
