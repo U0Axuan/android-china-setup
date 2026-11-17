@@ -63,7 +63,7 @@ fun CatalogHome(
 ) {
     val groups = remember(apps) { Catalog.grouped(apps) }
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxHeight().widthIn(max = 760.dp).fillMaxWidth(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
