@@ -2,6 +2,7 @@ package io.github.u0axuan.androidchinasetup
 
 import android.os.Build
 import coil.compose.AsyncImage
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -62,7 +63,7 @@ fun CatalogHome(
 ) {
     val groups = remember(apps) { Catalog.grouped(apps) }
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxHeight().widthIn(max = 760.dp).fillMaxWidth(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -125,8 +126,7 @@ private fun CatalogRow(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        onClick = { onDetails(app) }
+        color = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
         Row(Modifier.padding(start = 12.dp, top = 12.dp, end = 10.dp, bottom = 12.dp),
             verticalAlignment = Alignment.CenterVertically) {
@@ -143,7 +143,12 @@ private fun CatalogRow(
                 )
                 Spacer(Modifier.width(12.dp))
             }
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Column(
+                Modifier.weight(1f)
+                    .sizeIn(minHeight = 48.dp)
+                    .clickable(onClickLabel = "查看" + app.name + "详情") { onDetails(app) },
+                verticalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
                 Text(app.name, style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold, maxLines = 1,
                     overflow = TextOverflow.Ellipsis)

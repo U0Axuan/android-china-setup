@@ -68,11 +68,30 @@ def dump(name):
         return root
     raise RuntimeError("Unable to dump release UI")
 
+def find(label, attempts=16):
+    for i in range(attempts):
+        root = dump("find_" + label + "_" + str(i))
+        found = elements(root, label)
+        if found:
+            return found[0]
+        adb("shell", "input", "swipe", "520", "1670", "520", "650", "230")
+    raise AssertionError("Cannot find " + label)
+
 try:
     sdk=int(adb("shell","getprop","ro.build.version.sdk").stdout.strip())
     check("API matches emulator",sdk==int(os.environ.get("EXPECTED_API",sdk)),str(sdk))
+    previous = Path("dist/previous.apk")
+    if previous.exists():
+        res = adb("install", "-r", str(previous), timeout=150)
+        check("Previous v0.7.1 installs", "Success" in res.stdout)
+        adb("shell", "am", "start", "-n", PACKAGE+"/.MainActivity")
+        time.sleep(3)
+        adb("shell", "am", "force-stop", PACKAGE)
     res=adb("install","-r",APK,timeout=150)
     check("Signed APK installed","Success" in res.stdout,res.stdout.strip())
+    if previous.exists():
+        package = adb("shell", "dumpsys", "package", PACKAGE).stdout
+        check("Upgrade installs version 0.7.2 without uninstall", "versionName=0.7.2" in package)
     adb("logcat","-c")
     adb("shell","am","start","-n",PACKAGE+"/.MainActivity")
     root=None
@@ -144,6 +163,31 @@ try:
     pid=adb("shell","pidof",PACKAGE,check=False).stdout.strip()
     check("App process remains alive",bool(pid))
     screenshot("03_release_home_back")
+
+    # Exercise the real release downloader, including its APK parsing and
+    # official checksum validation. Do not install the third-party application.
+    tap(find("设置"))
+    tap(find("进入下载与测速"))
+    tap(find("GitHub 官方直连"))
+    tap(find("返回设置"))
+    tap(find("返回应用列表"))
+    tap(find("Material Files"))
+    tap(find("下载官方 APK"))
+    # The status card is above the scrolled catalog; return to its top.
+    for _ in range(12):
+        adb("shell", "input", "swipe", "520", "650", "520", "1670", "180")
+    ready = False
+    for attempt in range(30):
+        root = dump("download_" + str(attempt))
+        if elements(root, "安装已下载 APK（系统确认）"):
+            ready = True
+            break
+        if elements(root, "下载失败"):
+            break
+        time.sleep(2)
+    check("Official APK downloaded and validated in the signed app", ready,
+          "Material Files; no third-party app installed")
+    screenshot("04_verified_download")
 except Exception as error:
     checks.append({"name":"blocking_error","passed":False,"detail":repr(error)})
     print("FAIL: blocking_error "+repr(error),flush=True)
