@@ -147,8 +147,7 @@
     "repository": "CYQawa/YunX",
     "downloadMode": "auto",
     "notice": "仅处理有权访问的资源，第三方服务接口可能发生变化。",
-    "preferredApkRegex": "^YunX_release_[0-9.]+\\.apk$",
-    "logoPath": "app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp"
+    "preferredApkRegex": "^YunX_release_[0-9.]+\\.apk$"
   },
   {
     "name": "Obtainium",
@@ -185,8 +184,7 @@
     "readmeSnapshot": "Shizuku 允许应用通过其服务调用部分 Android 系统 API，使用前需要按官方说明授权及启动服务；不等同于 Root。",
     "homepage": "https://github.com/RikkaApps/Shizuku",
     "readmeUrl": "https://github.com/RikkaApps/Shizuku#readme",
-    "repository": "RikkaApps/Shizuku",
-    "logoPath": "manager/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
+    "repository": "RikkaApps/Shizuku"
   },
   {
     "name": "Canta",
