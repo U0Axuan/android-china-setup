@@ -92,8 +92,7 @@
     "repository": "Pilipala9919/MarcoMovie",
     "downloadMode": "auto",
     "notice": "仅提供播放器，内容源及版权请自行核验。",
-    "preferredApkRegex": "^MarcoMovie-[0-9.]+-android-mobile\\.apk$",
-    "logoPath": "docs/images/app-icon-512.png"
+    "preferredApkRegex": "^MarcoMovie-[0-9.]+-android-mobile\\.apk$"
   },
   {
     "name": "MeiloX",
@@ -105,8 +104,7 @@
     "repository": "MeiloX/MeiloX",
     "downloadMode": "auto",
     "notice": "非官方客户端；部分音源受服务条款及版权限制。",
-    "preferredApkRegex": "^app-release\\.apk$",
-    "logoPath": "screenshot/logo.png"
+    "preferredApkRegex": "^app-release\\.apk$"
   },
   {
     "name": "FuoEvolve",
@@ -137,8 +135,7 @@
     "readmeSnapshot": "LocalSend 为跨平台开源文件传输工具，设备在同一局域网内即可共享文件；支持 Android、桌面等平台。",
     "homepage": "https://github.com/localsend/localsend",
     "readmeUrl": "https://github.com/localsend/localsend#readme",
-    "repository": "localsend/localsend",
-    "logoPath": "app/assets/img/logo-256.png"
+    "repository": "localsend/localsend"
   },
   {
     "name": "云析（YunX）",
@@ -160,8 +157,7 @@
     "readmeSnapshot": "Obtainium 从 GitHub 等开发者发布源跟踪应用版本，可管理非应用商店分发的开源 APK。",
     "homepage": "https://github.com/ImranR98/Obtainium",
     "readmeUrl": "https://github.com/ImranR98/Obtainium#readme",
-    "repository": "ImranR98/Obtainium",
-    "logoPath": "assets/graphics/icon_small.png"
+    "repository": "ImranR98/Obtainium"
   },
   {
     "name": "F-Droid",
