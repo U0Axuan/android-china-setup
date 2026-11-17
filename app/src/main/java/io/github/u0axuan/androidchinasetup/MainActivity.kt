@@ -344,7 +344,7 @@ class MainActivity : ComponentActivity() {
                 )
             }
         ) { padding ->
-            Box(Modifier.fillMaxSize().padding(padding)) {
+            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
                 if (!settingsOpen) {
                     CatalogHome(
                         apps = apps, busy = downloadBusy, metadata = metadata, status = downloadText,
