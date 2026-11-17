@@ -34,7 +34,7 @@ object ReadmeDocument {
     private fun htmlText(raw: String): String {
         val doc = Jsoup.parseBodyFragment(raw)
         doc.select(forbiddenHtml).remove()
-        return doc.body().text().replace(Regex("[ \\t]{2,}"), " ").trim()
+        return doc.body().text().replace(Regex("[ \t]{2,}"), " ").trim()
     }
 
     /** Preserve the meaning of authored HTML blocks without rendering active HTML. */
@@ -65,9 +65,7 @@ object ReadmeDocument {
                 else -> {
                     val children = element.children()
                     if (children.isEmpty()) {
-                        if (element.normalName() !in setOf(
-                                "img", "a", "span", "b", "strong", "em", "i", "code"))
-                            add(ReadmePart.Type.PARAGRAPH, element.text(), depth)
+                        add(ReadmePart.Type.PARAGRAPH, element.text(), depth)
                     } else if (element.normalName() in setOf(
                             "body", "div", "section", "article", "details")) {
                         val own = element.ownText().trim()

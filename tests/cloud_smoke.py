@@ -71,8 +71,9 @@ def tap(node):
         time.sleep(1.0)
 
 def swipe(down=True):
-    adb("shell","input","swipe","520",str(1670 if down else 650),
-        "520",str(650 if down else 1670),"230")
+    w, h = map(int, re.findall(r"\d+", adb("shell", "wm", "size").stdout)[-2:])
+    adb("shell", "input", "swipe", str(w//2), str(int(h*(0.70 if down else 0.28))),
+        str(w//2), str(int(h*(0.28 if down else 0.70))), "230")
     time.sleep(0.4)
 
 def find(label, exact=False, attempts=10):
@@ -87,6 +88,46 @@ def find(label, exact=False, attempts=10):
 
 def click(label,exact=False):
     tap(find(label,exact))
+
+def hide_keyboard():
+    state = adb("shell", "dumpsys", "input_method").stdout
+    if re.search(r"(?:mInputShown|isInputViewShown)=true", state):
+        adb("shell", "input", "keyevent", "4")
+        time.sleep(1)
+
+def fill_field(label, value):
+    # A label can be visible underneath the IME. Find the actual EditText,
+    # then verify focus before sending text; never type into a stale target.
+    hide_keyboard()
+    find(label)
+    for attempt in range(8):
+        root = dump("field_" + label + "_" + str(attempt))
+        fields = [n for n in root.iter("node")
+                  if n.attrib.get("class") == "android.widget.EditText"
+                  and matches(n, label, True)]
+        if fields:
+            tap(fields[0])
+            focused = dump("focus_" + label)
+            candidates = [n for n in focused.iter("node")
+                          if n.attrib.get("class") == "android.widget.EditText"
+                          and n.attrib.get("focused") == "true"
+                          and matches(n, label, True)]
+            if candidates:
+                adb("shell", "input", "keyevent", "KEYCODE_MOVE_END")
+                adb("shell", "input", "keyevent", "--longpress", "KEYCODE_DEL")
+                # Tests fill fresh/cleared fields, except invalid-address retry.
+                for _ in range(len(candidates[0].attrib.get("text", ""))):
+                    adb("shell", "input", "keyevent", "KEYCODE_DEL")
+                adb("shell", "input", "text", value)
+                root = dump("typed_" + label)
+                assert_check("Input reaches " + label,
+                    any(n.attrib.get("text") == value for n in root.iter("node")
+                        if n.attrib.get("class") == "android.widget.EditText"))
+                hide_keyboard()
+                return
+        hide_keyboard()
+        swipe(True)
+    raise AssertionError("Unable to focus input: " + label)
 
 def pref():
     return adb("shell","run-as",PACKAGE,"cat",
@@ -197,15 +238,15 @@ try:
     click("GHFast")
     assert_check("Mirror choice saved","ghfast" in pref())
 
-    click("源名称")
-    adb("shell","input","text","MyMirror")
-    # KEYCODE_ENTER dismisses single-line input without navigating out of the submenu.
-    adb("shell","input","keyevent","66")
-    click("HTTPS 镜像前缀")
-    adb("shell","input","text","https://mirror.example.com")
-    adb("shell","input","keyevent","66")
+    fill_field("源名称", "MyMirror")
+    fill_field("HTTPS 镜像前缀", "http://invalid.example.com")
     click("添加加速源")
-    assert_check("Custom mirror persisted","mirror.example.com" in pref())
+    assert_check("HTTP mirror rejected", bool(matches(dump("07_invalid_source"), "请输入合法 HTTPS")))
+    assert_check("Invalid mirror not persisted", "invalid.example.com" not in pref())
+    fill_field("HTTPS 镜像前缀", "https://mirror.example.com")
+    click("添加加速源")
+    assert_check("Custom mirror persisted", "mirror.example.com" in pref())
+    assert_check("Custom mirror success feedback", bool(matches(dump("07_added"), "已添加并选中 MyMirror")))
     shot("07_custom_source")
 
     # The speed action must be visible and respond; external connectivity
@@ -269,6 +310,10 @@ try:
     assert_check("SOCKS5 persisted","SOCKS5" in pref())
     shot("09_proxy_settings")
 
+    # Restore a working network configuration before update/network checks.
+    toggle = visible_proxy_switch("09_disable_proxy")
+    if toggle is not None and toggle.attrib.get("checked") == "true": tap(toggle)
+    assert_check("Proxy disabled again", 'name="proxyEnabled" value="false"' in pref())
     click("返回设置")
     find("关于与自更新")
     assert_check("About and update integrated",True)
@@ -286,20 +331,68 @@ try:
     assert_check("Relaunch after preferences",bool(matches(dump("12_restart"),"Android China Setup")))
     assert_check("Custom source survives restart","mirror.example.com" in pref())
     shot("12_relaunch")
-    # Material 3 smoke: system dark theme and 140% text must not crash the catalog.
-    adb("shell", "cmd", "uimode", "night", "yes", check=False)
-    adb("shell", "settings", "put", "system", "font_scale", "1.4", check=False)
+    # Delete the selected custom mirror and verify the automatic fallback.
+    click("设置", True)
+    click("进入下载与测速")
+    click("删除", True)
+    assert_check("Custom mirror deleted", "mirror.example.com" not in pref())
+    assert_check("Deleting selected mirror restores auto", '>auto<' in pref())
+    click("返回设置")
+    click("返回应用列表")
+
+    # Offline cold start must retain the catalog and a readable detail.
+    adb("shell", "svc", "wifi", "disable")
+    adb("shell", "svc", "data", "disable")
+    adb("shell", "am", "force-stop", PACKAGE)
+    adb("shell", "am", "start", "-n", PACKAGE + "/.MainActivity")
     time.sleep(3)
-    assert_check("Dark theme and larger text keep catalog usable",
-        bool(matches(dump("13_dark_large_text"), "精选 Android 开源应用")))
-    shot("13_dark_large_text")
-    adb("shell", "settings", "put", "system", "font_scale", "1.0", check=False)
-    adb("shell", "cmd", "uimode", "night", "no", check=False)
+    assert_check("Offline cold start shows catalog", bool(matches(dump("14_offline"), "23 个项目")))
+    click("曦码输入法")
+    assert_check("Offline README fallback readable", bool(matches(dump("14_offline_detail"), "README")))
+    shot("14_offline_detail")
+    adb("shell", "input", "keyevent", "4")
+    adb("shell", "svc", "wifi", "enable")
+    adb("shell", "svc", "data", "enable")
+
+    # Exercise navigation under font/theme/size changes, capture actual UI.
+    for name, font, dark, size in [
+        ("15_dark_large", "1.4", "yes", None),
+        ("16_font_200", "2.0", "no", None),
+        ("17_narrow", "1.0", "no", "840x1800"),
+        ("18_landscape", "1.0", "yes", "2400x1080"),
+        ("19_tablet", "1.0", "no", "2560x1600"),
+    ]:
+        adb("shell", "settings", "put", "system", "font_scale", font)
+        adb("shell", "cmd", "uimode", "night", dark)
+        if size: adb("shell", "wm", "size", size)
+        time.sleep(3)
+        assert_check(name + " catalog", bool(matches(dump(name), "Android China Setup")))
+        shot(name + "_home")
+        click("设置", True)
+        find("进入下载与测速")
+        shot(name + "_settings")
+        click("进入下载与测速")
+        find("开始测速")
+        assert_check(name + " submenu usable", True)
+        shot(name + "_download")
+        click("返回设置")
+        click("返回应用列表")
+    adb("shell", "wm", "size", "reset")
+    adb("shell", "settings", "put", "system", "font_scale", "1.0")
+    adb("shell", "cmd", "uimode", "night", "no")
+    assert_check("No app fatal exception", not re.search(
+        r"FATAL EXCEPTION[^\n]*\n[^\n]*Process: " + re.escape(PACKAGE),
+        adb("logcat", "-d", "-v", "brief").stdout))
 
 except Exception as exc:
     checks.append({"name":"blocking_error","passed":False,"note":repr(exc)})
     print("FAIL: blocking_error",repr(exc),flush=True)
 finally:
+    shot("final_state")
+    try:
+        dump("final_state")
+        (OUT/"preferences.xml").write_text(pref(), encoding="utf-8")
+    except Exception: pass
     try:
         logs=adb("logcat","-d","-v","time",timeout=40,check=False).stdout
         (OUT/"logcat.txt").write_text(logs[-500000:],encoding="utf-8",errors="replace")

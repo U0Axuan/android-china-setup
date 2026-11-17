@@ -63,6 +63,12 @@ class ReadmeDocumentTest {
         assertFalse(readable.contains("<table"))
     }
 
+    @Test fun standaloneHtmlLinksAndSpansKeepTheirText() {
+        val parts = ReadmeDocument.parse("<div><a href=\"https://example.com\">Install</a><span>Settings</span></div>")
+        assertTrue(parts.any { it.text == "Install" })
+        assertTrue(parts.any { it.text == "Settings" })
+    }
+
     @Test fun onlySafeRasterIconPathsAreAccepted() {
         assertTrue(Catalog.validLogoPath("app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp"))
         assertTrue(Catalog.validLogoPath(""))

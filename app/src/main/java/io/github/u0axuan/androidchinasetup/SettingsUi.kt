@@ -6,6 +6,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -56,8 +61,9 @@ fun SettingsPage(
     installUpdate: () -> Unit,
     openUrl: (String) -> Unit
 ) {
-    var customName by remember { mutableStateOf("") }
-    var customPrefix by remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
+    var customName by rememberSaveable { mutableStateOf("") }
+    var customPrefix by rememberSaveable { mutableStateOf("") }
     var addNotice by remember { mutableStateOf("") }
     val available = DownloadSources.presets + model.customSources
     val newer = model.newVersion?.takeIf {
@@ -65,7 +71,7 @@ fun SettingsPage(
     }
 
     LazyColumn(
-        modifier = Modifier.fillMaxHeight().widthIn(max = 760.dp).fillMaxWidth(),
+        modifier = Modifier.fillMaxHeight().widthIn(max = 760.dp).fillMaxWidth().imePadding(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp,
             bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -180,6 +186,8 @@ fun SettingsPage(
                     onValueChange = { customName = it.take(40) },
                     label = { Text("源名称") },
                     singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Next) }),
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
@@ -188,9 +196,12 @@ fun SettingsPage(
                     label = { Text("HTTPS 镜像前缀") },
                     placeholder = { Text("https://mirror.example.com") },
                     singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                     modifier = Modifier.fillMaxWidth()
                 )
                 Button(onClick = {
+                    focusManager.clearFocus()
                     val valid = DownloadSources.validPrefix(customPrefix)
                     addNotice = when {
                         valid == null -> "请输入合法 HTTPS 源地址"

@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -74,8 +75,8 @@ class MainActivity : ComponentActivity() {
         }
         val downloader = remember { ApkDownloader(this) }
         val benchmark = remember { SourceBenchmarker() }
-        var settingsOpen by remember { mutableStateOf(false) }
-        var downloadSettingsOpen by remember { mutableStateOf(false) }
+        var settingsOpen by rememberSaveable { mutableStateOf(false) }
+        var downloadSettingsOpen by rememberSaveable { mutableStateOf(false) }
         var detail by remember { mutableStateOf<CatalogApp?>(null) }
         var downloadBusy by remember { mutableStateOf(false) }
         var downloadPercent by remember { mutableIntStateOf(0) }
