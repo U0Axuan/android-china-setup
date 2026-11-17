@@ -10,7 +10,9 @@
 4. 对 Compose 动态合成、Android adaptive icon 前景/背景图、Flutter 平台资源、仓库品牌图等，不能仅从文件名确认完整启动图标；在确认原始应用启动图标前**一律留空**。
 5. 对任何新增 Logo，人工核对原作者仓库的 AndroidManifest `android:icon` 或应用 icon 配置、资源路径及实际缩略图，记录证据后再填写 `logoPath`。此流程不能靠“路径存在”代替身份验证。
 
-本次主动取消不确定的 `MarcoMovie`、`MeiloX`、`LocalSend`、`Obtainium` logoPath；并在 Android 解析器及目录 CLI 中施加相同的路径约束。**无图标就不显示图标区**。
+本次主动取消不确定的 `MarcoMovie`、`MeiloX`、`LocalSend`、`Obtainium`、`云析（YunX）`、`Shizuku` logoPath；并在 Android 解析器及目录 CLI 中施加相同的路径约束。**无图标就不显示图标区**。
+
+Manifest 核对记录：Xime、FuoEvolve、Material Files、Canta、TelemetryCleaner 的应用图标声明对应当前收录的 mipmap 图标资源；YunX 使用 `@drawable/icon` 或 `@drawable/ic_launcher_new`，Shizuku 的 Manifest 图标声明出现 `@drawable/ic_launcher` 等活动级资源，因此撤销这两项不确定映射。今后新增图标需核验声明位置（application/launcher activity）、资源引用和实际图案，不能只看文件名。
 
 ## README
 
