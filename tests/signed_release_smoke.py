@@ -71,8 +71,18 @@ def dump(name):
 try:
     sdk=int(adb("shell","getprop","ro.build.version.sdk").stdout.strip())
     check("API matches emulator",sdk==int(os.environ.get("EXPECTED_API",sdk)),str(sdk))
+    previous = Path("dist/previous.apk")
+    if previous.exists():
+        res = adb("install", "-r", str(previous), timeout=150)
+        check("Previous v0.7.1 installs", "Success" in res.stdout)
+        adb("shell", "am", "start", "-n", PACKAGE+"/.MainActivity")
+        time.sleep(3)
+        adb("shell", "am", "force-stop", PACKAGE)
     res=adb("install","-r",APK,timeout=150)
     check("Signed APK installed","Success" in res.stdout,res.stdout.strip())
+    if previous.exists():
+        package = adb("shell", "dumpsys", "package", PACKAGE).stdout
+        check("Upgrade installs version 0.7.2 without uninstall", "versionName=0.7.2" in package)
     adb("logcat","-c")
     adb("shell","am","start","-n",PACKAGE+"/.MainActivity")
     root=None

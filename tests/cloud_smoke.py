@@ -133,6 +133,11 @@ def pref():
     return adb("shell","run-as",PACKAGE,"cat",
                "shared_prefs/preferences.xml",check=False).stdout
 
+def custom_prefixes():
+    root = ET.fromstring(pref())
+    value = next((n.text for n in root if n.attrib.get("name") == "customSources"), "[]")
+    return [item["prefix"] for item in json.loads(value)]
+
 try:
     api=int(adb("shell","getprop","ro.build.version.sdk").stdout.strip())
     assert_check("Expected emulator SDK",api==int(os.environ.get("EXPECTED_API",api)),api)
@@ -242,10 +247,10 @@ try:
     fill_field("HTTPS 镜像前缀", "http://invalid.example.com")
     click("添加加速源")
     assert_check("HTTP mirror rejected", bool(matches(dump("07_invalid_source"), "请输入合法 HTTPS")))
-    assert_check("Invalid mirror not persisted", "invalid.example.com" not in pref())
+    assert_check("Invalid mirror not persisted", "http://invalid.example.com" not in custom_prefixes())
     fill_field("HTTPS 镜像前缀", "https://mirror.example.com")
     click("添加加速源")
-    assert_check("Custom mirror persisted", "mirror.example.com" in pref())
+    assert_check("Custom mirror persisted", "https://mirror.example.com" in custom_prefixes())
     assert_check("Custom mirror success feedback", bool(matches(dump("07_added"), "已添加并选中 MyMirror")))
     shot("07_custom_source")
 
@@ -329,13 +334,13 @@ try:
     adb("shell","am","start","-n",PACKAGE+"/.MainActivity")
     time.sleep(3)
     assert_check("Relaunch after preferences",bool(matches(dump("12_restart"),"Android China Setup")))
-    assert_check("Custom source survives restart","mirror.example.com" in pref())
+    assert_check("Custom source survives restart","https://mirror.example.com" in custom_prefixes())
     shot("12_relaunch")
     # Delete the selected custom mirror and verify the automatic fallback.
     click("设置", True)
     click("进入下载与测速")
     click("删除", True)
-    assert_check("Custom mirror deleted", "mirror.example.com" not in pref())
+    assert_check("Custom mirror deleted", "https://mirror.example.com" not in custom_prefixes())
     assert_check("Deleting selected mirror restores auto", '>auto<' in pref())
     click("返回设置")
     click("返回应用列表")
