@@ -168,9 +168,14 @@ try:
     root=dump("02_readme_sheet")
     for attempt in range(5):
         if matches(root,"阅读原项目 README 全文"): break
-        adb("shell","input","keyevent","4")
-        time.sleep(1)
-        click("曦码输入法")
+        # Metadata/icon arrival can move the row between dump and tap.
+        # Retry from the observed home, never press Back there (it exits).
+        if matches(root, "精选 Android 开源应用"):
+            click("曦码输入法")
+        elif matches(root, "Android China Setup") or matches(root, "曦码输入法"):
+            find("阅读原项目 README 全文", attempts=4)
+        else:
+            raise AssertionError("Unexpected surface while opening README")
         root=dump("02_readme_retry_"+str(attempt))
     assert_check("Upstream README area displayed",bool(matches(root,"README")))
     assert_check("README is cached or offline",bool(matches(root,"离线摘要")) or bool(matches(root,"原文已排版")))
