@@ -45,9 +45,30 @@ class ReadmeDocumentTest {
         assertTrue(parts.any { it.text == "Hello" })
     }
 
+    @Test fun htmlTablesAndDetailsAreReadableWithoutTags() {
+        val text = """
+            <details><summary>Install instructions</summary>
+              <p>Use the original release.</p>
+              <table><tr><th>Platform</th><th>Package</th></tr>
+              <tr><td>Android</td><td>APK</td></tr></table>
+              <pre>adb install app.apk</pre>
+            </details>
+        """.trimIndent()
+        val parts = ReadmeDocument.parse(text)
+        val readable = parts.joinToString("\n") { it.text }
+        assertTrue(readable.contains("Install instructions"))
+        assertTrue(readable.contains("Android  |  APK"))
+        assertTrue(parts.any { it.type == ReadmePart.Type.CODE && it.text.contains("adb install") })
+        assertFalse(readable.contains("<details"))
+        assertFalse(readable.contains("<table"))
+    }
+
     @Test fun onlySafeRasterIconPathsAreAccepted() {
         assertTrue(Catalog.validLogoPath("app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp"))
         assertTrue(Catalog.validLogoPath(""))
+        assertFalse(Catalog.validLogoPath("screenshot/logo.png"))
+        assertFalse(Catalog.validLogoPath("docs/images/app-icon-512.png"))
+        assertFalse(Catalog.validLogoPath("assets/graphics/icon_small.png"))
         assertFalse(Catalog.validLogoPath("../bad.png"))
         assertFalse(Catalog.validLogoPath("https://img.shields.io/badge.svg"))
         assertFalse(Catalog.validLogoPath("docs/images/brand.svg"))
