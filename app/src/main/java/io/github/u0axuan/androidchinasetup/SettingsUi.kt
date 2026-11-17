@@ -313,7 +313,11 @@ private fun MirrorItem(
     result: ProbeResult?, onSelect: () -> Unit,
     onDelete: (() -> Unit)? = null
 ) {
+    val foreground = if (selected) MaterialTheme.colorScheme.onPrimaryContainer
+        else MaterialTheme.colorScheme.onSurface
+    val secondaryForeground = if (selected) foreground else MaterialTheme.colorScheme.onSurfaceVariant
     Surface(
+        contentColor = foreground,
         color = if (selected) MaterialTheme.colorScheme.primaryContainer
                 else MaterialTheme.colorScheme.surfaceContainerLow,
         shape = MaterialTheme.shapes.medium,
@@ -323,14 +327,15 @@ private fun MirrorItem(
             Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            RadioButton(selected = selected, onClick = onSelect)
+            RadioButton(selected = selected, onClick = onSelect,
+                colors = RadioButtonDefaults.colors(selectedColor = foreground))
             Column(Modifier.weight(1f).sizeIn(minHeight = 48.dp)
                 .clickable(onClickLabel = "选择下载源：" + name, onClick = onSelect),
                 verticalArrangement = Arrangement.Center) {
                 Text(name, style = MaterialTheme.typography.titleSmall)
                 Text(address, style = MaterialTheme.typography.bodySmall,
                     maxLines = 1, overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    color = secondaryForeground)
             }
             if (result != null) {
                 Column(horizontalAlignment = Alignment.End) {
@@ -346,6 +351,7 @@ private fun MirrorItem(
             }
             if (onDelete != null) {
                 TextButton(onClick = onDelete,
+                    colors = ButtonDefaults.textButtonColors(contentColor = foreground),
                     modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)) { Text("删除") }
             }
         }
