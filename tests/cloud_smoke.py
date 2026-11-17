@@ -17,6 +17,16 @@ OUT.mkdir(parents=True, exist_ok=True)
 PACKAGE = "io.github.u0axuan.androidchinasetup"
 APK = "app/build/outputs/apk/debug/app-debug.apk"
 checks = []
+# A fresh install can display the bundled catalog before the online refresh.
+# Both counts come from reviewed files, not a hardcoded historical app total.
+CATALOG_COUNTS = {
+    len(json.loads(Path(path).read_text(encoding="utf-8")))
+    for path in ("app/src/main/assets/apps.json", "catalog/apps.json")
+}
+
+def catalog_count_visible(root, template):
+    return any(matches(root, template.format(count=count)) for count in CATALOG_COUNTS)
+
 
 def adb(*args, timeout=50, check=True):
     return subprocess.run(["adb", *args], text=True, capture_output=True,
@@ -155,7 +165,7 @@ try:
         adb("shell","am","start","-n",PACKAGE+"/.MainActivity")
     assert_check("App launched",bool(matches(root,"Android China Setup")))
     assert_check("Category index visible",bool(matches(root,"精选 Android 开源应用")))
-    assert_check("Catalog item count visible",bool(matches(root,"23 个项目")))
+    assert_check("Catalog item count visible",catalog_count_visible(root, "{count} 个项目"))
     assert_check("Settings entry in top bar",bool(matches(root,"设置",True)))
     assert_check("No bottom navigation",not matches(root,"测速",True) and
         not matches(root,"关于",True))
@@ -236,7 +246,7 @@ try:
     root=dump("06_settings")
     assert_check("Settings opened",bool(matches(root,"进入下载与测速")))
     assert_check("Online catalog controls shown",bool(matches(root,"刷新应用目录")))
-    assert_check("Online catalog count shown",bool(matches(root,"已收录 23 个开源项目")))
+    assert_check("Online catalog count shown",catalog_count_visible(root, "已收录 {count} 个开源项目"))
     assert_check("Recommendation issue entry",bool(matches(root,"提交应用推荐")))
     click("进入下载与测速")
     assert_check("Speed test in secondary menu",bool(matches(dump("06_download_menu"),"开始测速")))
@@ -359,7 +369,7 @@ try:
     adb("shell", "am", "force-stop", PACKAGE)
     adb("shell", "am", "start", "-n", PACKAGE + "/.MainActivity")
     time.sleep(3)
-    assert_check("Offline cold start shows catalog", bool(matches(dump("14_offline"), "23 个项目")))
+    assert_check("Offline cold start shows catalog", catalog_count_visible(dump("14_offline"), "{count} 个项目"))
     click("曦码输入法")
     assert_check("Offline README fallback readable", bool(matches(dump("14_offline_detail"), "README")))
     shot("14_offline_detail")
