@@ -209,8 +209,7 @@
     "repository": "Eynnzerr/TelemetryCleaner",
     "downloadMode": "auto",
     "notice": "卸载系统组件可能影响通信、录音等功能；操作前请确认兼容性。",
-    "preferredApkRegex": "^TelemetryCleaner-v[0-9.]+\\.apk$",
-    "logoPath": "app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp"
+    "preferredApkRegex": "^TelemetryCleaner-v[0-9.]+\\.apk$"
   },
   {
     "name": "GhostLock",

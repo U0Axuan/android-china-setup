@@ -247,10 +247,10 @@ try:
     fill_field("HTTPS 镜像前缀", "http://invalid.example.com")
     click("添加加速源")
     assert_check("HTTP mirror rejected", bool(matches(dump("07_invalid_source"), "请输入合法 HTTPS")))
-    assert_check("Invalid mirror not persisted", "http://invalid.example.com" not in custom_prefixes())
+    assert_check("Invalid mirror not persisted", all(value != "http://invalid.example.com" for value in custom_prefixes()))
     fill_field("HTTPS 镜像前缀", "https://mirror.example.com")
     click("添加加速源")
-    assert_check("Custom mirror persisted", "https://mirror.example.com" in custom_prefixes())
+    assert_check("Custom mirror persisted", any(value == "https://mirror.example.com" for value in custom_prefixes()))
     assert_check("Custom mirror success feedback", bool(matches(dump("07_added"), "已添加并选中 MyMirror")))
     shot("07_custom_source")
 
@@ -330,17 +330,20 @@ try:
 
     click("返回应用列表")
     assert_check("Back returns to categories",bool(matches(dump("11_back"),"精选 Android 开源应用")))
+    daily_before = adb("shell", "run-as", PACKAGE, "cat", "shared_prefs/catalog-update.xml", check=False).stdout
     adb("shell","am","force-stop",PACKAGE)
     adb("shell","am","start","-n",PACKAGE+"/.MainActivity")
     time.sleep(3)
+    daily_after = adb("shell", "run-as", PACKAGE, "cat", "shared_prefs/catalog-update.xml", check=False).stdout
+    assert_check("Same-day restart does not refresh catalog again", bool(daily_before) and daily_before == daily_after)
     assert_check("Relaunch after preferences",bool(matches(dump("12_restart"),"Android China Setup")))
-    assert_check("Custom source survives restart","https://mirror.example.com" in custom_prefixes())
+    assert_check("Custom source survives restart",any(value == "https://mirror.example.com" for value in custom_prefixes()))
     shot("12_relaunch")
     # Delete the selected custom mirror and verify the automatic fallback.
     click("设置", True)
     click("进入下载与测速")
     click("删除", True)
-    assert_check("Custom mirror deleted", "https://mirror.example.com" not in custom_prefixes())
+    assert_check("Custom mirror deleted", all(value != "https://mirror.example.com" for value in custom_prefixes()))
     assert_check("Deleting selected mirror restores auto", '>auto<' in pref())
     click("返回设置")
     click("返回应用列表")

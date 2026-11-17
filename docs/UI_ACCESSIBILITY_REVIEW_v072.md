@@ -10,9 +10,9 @@
 4. 对 Compose 动态合成、Android adaptive icon 前景/背景图、Flutter 平台资源、仓库品牌图等，不能仅从文件名确认完整启动图标；在确认原始应用启动图标前**一律留空**。
 5. 对任何新增 Logo，人工核对原作者仓库的 AndroidManifest `android:icon` 或应用 icon 配置、资源路径及实际缩略图，记录证据后再填写 `logoPath`。此流程不能靠“路径存在”代替身份验证。
 
-本次主动取消不确定的 `MarcoMovie`、`MeiloX`、`LocalSend`、`Obtainium`、`云析（YunX）`、`Shizuku` logoPath；并在 Android 解析器及目录 CLI 中施加相同的路径约束。**无图标就不显示图标区**。
+本次主动取消不确定的 `MarcoMovie`、`MeiloX`、`LocalSend`、`Obtainium`、`云析（YunX）`、`Shizuku`、`遥测组件清理` logoPath；并在 Android 解析器及目录 CLI 中施加相同的路径约束。**无图标就不显示图标区**。
 
-Manifest 核对记录：Xime、FuoEvolve、Material Files、Canta、TelemetryCleaner 的应用图标声明对应当前收录的 mipmap 图标资源；YunX 使用 `@drawable/icon` 或 `@drawable/ic_launcher_new`，Shizuku 的 Manifest 图标声明出现 `@drawable/ic_launcher` 等活动级资源，因此撤销这两项不确定映射。今后新增图标需核验声明位置（application/launcher activity）、资源引用和实际图案，不能只看文件名。
+Manifest 核对记录：Xime、FuoEvolve、Material Files、Canta 的应用图标声明对应当前收录的 mipmap 图标资源；YunX 使用 `@drawable/icon` 或 `@drawable/ic_launcher_new`，Shizuku 的 Manifest 图标声明出现 `@drawable/ic_launcher` 等活动级资源，因此撤销这两项不确定映射。今后新增图标需核验声明位置（application/launcher activity）、资源引用和实际图案，不能只看文件名。
 
 ## README
 
@@ -38,3 +38,10 @@ Manifest 核对记录：Xime、FuoEvolve、Material Files、Canta、TelemetryCle
 ## 发布门槛
 
 需要目录校验、自测、Android 单元测试与 APK 编译通过，并通过 Android 11/15 冒烟及截图复核后再考虑发布；不能以此报告代替实际测试。
+
+## 2026-11-17 补充复核
+
+- 遥测组件清理的 `mipmap-xxxhdpi/ic_launcher.webp` 是旧的 Android 默认机器人。Android 11+ 实际选用 `mipmap-anydpi/ic_launcher.xml`，前景为清理条纹与星形，不能使用旧 WebP 代替，已从在线与离线目录删除此映射。
+- 曦码、Material Files、Canta 已对照 adaptive-icon 引用与旧完整图形确认主体一致；FuoEvolve 使用原完整栅格启动图。当前保留 4 个原图，其余留空。
+- 自定义镜像的键盘避让、Next/Done 和保存状态已补齐；测试在输入前验证真正的 EditText 焦点，保存后检查 XML 中的 JSON 精确地址。
+- Lint 已运行，未发现错误；现有警告主要为 SDK/依赖版本更新建议及备份配置提示，本补丁不进行框架大版本迁移。
