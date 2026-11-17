@@ -90,9 +90,9 @@ def validate(data):
         if not isinstance(logo, str) or (logo and (
             len(logo) > 220 or logo.startswith(("/", ".")) or
             ".." in logo or "//" in logo or
-            not re.fullmatch(r"[A-Za-z0-9_./-]+\.(?:png|webp|jpg|jpeg)", logo, re.I) or
+            not re.fullmatch(r"(?:[A-Za-z0-9_./-]+/)?(?:mipmap|drawable)-[a-z0-9_-]+/(?:ic_launcher|launcher_icon)(?:_round)?\.(?:png|webp)", logo, re.I) or
             not repo)):
-            raise ValueError(f"{name} 的 logoPath 必须是原仓库内已核实的图片路径")
+            raise ValueError(f"{name} 的 logoPath 必须是人工核实的 Android launcher 图标资源路径（无图标时留空）")
         regex = app.get("preferredApkRegex", "")
         if not isinstance(regex, str) or len(regex) > 160:
             raise ValueError(f"{name} 的 APK 匹配规则无效")
