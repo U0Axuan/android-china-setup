@@ -60,6 +60,7 @@ jobs:
           disable-animations: true
           script: |
             python3 tests/cloud_smoke.py
+            python3 tests/catalog_recovery.py
             adb shell pm clear io.github.u0axuan.androidchinasetup
             mkdir -p dist
             cp app/build/outputs/apk/debug/app-debug.apk dist/Android-China-Setup.apk
@@ -69,7 +70,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: android-emulator-results-api${{ matrix.api-level }}
-          path: test-results//
+          path: test-results/
           if-no-files-found: warn
       - name: Upload tested APK
         if: always()
