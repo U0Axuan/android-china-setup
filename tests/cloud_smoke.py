@@ -242,8 +242,17 @@ try:
     shot("05_scroll_performance")
 
     # The only settings entry is in the top-right bar.
-    click("设置",True)
-    root=dump("06_settings")
+    for cycle in range(3):
+        for attempt in range(4):
+            root = dump(f"06_settings_{cycle}_{attempt}")
+            if matches(root, "进入下载与测速"):
+                break
+            button = matches(root, "设置", True)
+            if button and matches(root, "Android China Setup"):
+                tap(button[-1])
+        assert_check(f"Settings opens from catalog {cycle + 1}", bool(matches(root, "进入下载与测速")))
+        if cycle < 2:
+            click("返回应用列表")
     assert_check("Settings opened",bool(matches(root,"进入下载与测速")))
     assert_check("Online catalog controls shown",bool(matches(root,"刷新应用目录")))
     assert_check("Online catalog count shown",catalog_count_visible(root, "已收录 {count} 个开源项目"))

@@ -69,32 +69,8 @@ class ApkDownloader(private val context: Context) {
                 !it.optString("name").contains("google-play", ignoreCase = true)
             }
             val pool = ordinary.ifEmpty { candidates }
-            fun abiMatch(name: String, abi: String): Boolean = when (abi) {
-                "arm64-v8a" -> name.contains("arm64") || name.contains("aarch64")
-                "armeabi-v7a" -> name.contains("armeabi-v7a") || name.contains("arm32v7")
-                "x86_64" -> name.contains("x86_64") || name.contains("x64")
-                "x86" -> Regex("(^|[-_.])x86([-_.]|$)").containsMatchIn(name)
-                else -> false
-            }
-            val perDevice = Build.SUPPORTED_ABIS.firstNotNullOfOrNull { abi ->
-                pool.filter { abiMatch(it.optString("name").lowercase(), abi) }
-                    .singleOrNull()
-            }
-            val universal = pool.filter {
-                val name = it.optString("name").lowercase()
-                name.contains("universal") || name.contains("noarch") ||
-                    name.contains("all-arch") || name == "app-release.apk"
-            }.singleOrNull()
-            // Some projects publish several *distribution variants* for one
-            // version. A trusted, hardcoded catalog pattern chooses the plain
-            // upstream APK rather than guessing from size or asset order.
-            val named = if (preferredApkRegex.isNotBlank()) {
-                val pattern = Regex(preferredApkRegex)
-                candidates.filter { pattern.matches(it.getString("name")) }.singleOrNull()
-                    ?: error("未找到唯一的官方 APK 版本，请到原项目发布页手动选择")
-            } else null
-            val chosen = named ?: perDevice ?: universal ?: pool.singleOrNull()
-                ?: error("存在多个版本且无法确定匹配架构，请访问项目发布页手动选择")
+            val name = ApkVariant.select(pool.map { it.getString("name") }, Build.SUPPORTED_ABIS.toList(), preferredApkRegex)
+            val chosen = pool.single { it.getString("name") == name }
             val download = chosen.getString("browser_download_url")
             require(URL(download).host.equals("github.com", true)) { "发布资源来源不是 GitHub" }
             val digest = chosen.optString("digest").takeIf { it.startsWith("sha256:") }?.removePrefix("sha256:")
