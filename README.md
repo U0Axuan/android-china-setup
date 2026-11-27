@@ -8,9 +8,10 @@
 
 **[下载正式版 APK](https://github.com/U0Axuan/android-china-setup/releases/latest/download/Android-China-Setup.apk)** · [发布记录](https://github.com/U0Axuan/android-china-setup/releases) · [反馈 / 推荐项目](https://github.com/U0Axuan/android-china-setup/issues/new?template=app-recommendation.yml)
 
-> **V0.7.2 版本说明**：应用详情显示经过排版的原作者 README、GitHub Star；Logo 仅使用核验后的原项目启动图标，无法确认时隐藏，不从 README 图片猜测。README 和 Star 数据进行本地缓存，离线回退摘要。在线目录每天首次启动检查一次。正式版本以 GitHub Latest 页面为准。
+> **v0.7.3** 会在下载前检查安装包架构。目录每天首次启动时更新，同步失败后再次启动可重试。下载过程中旋转屏幕或返回应用可继续查看进度。
 
-[本次修复说明](docs/RELEASE_NOTES_v0.7.2.md) · [测试结果与覆盖边界](docs/V0.7.2_TEST_REPORT.md)
+[本次修复说明](docs/RELEASE_NOTES_v0.7.3.md) · [发布记录](https://github.com/U0Axuan/android-china-setup/releases)
+
 
 ## 功能
 
