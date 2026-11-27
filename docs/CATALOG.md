@@ -1,6 +1,6 @@
 # 无需重新构建 APK 的应用目录维护
 
-Android China Setup 使用 `catalog/apps.json` 作为**唯一需要维护的在线应用目录**。首次支持该机制的 APK 安装后，用户启动时最多每 12 小时自动检查一次目录，或进入**右上角设置 → 应用目录 → 刷新应用目录**立即获取更新。网络受限时仍可查看本机上次成功缓存的数据，首次安装离线时回退 APK 内置的清单。
+Android China Setup 使用 `catalog/apps.json` 作为**唯一需要维护的在线应用目录**。客户端每天首次启动时检查目录。成功后当日跳过自动检查，失败后至少间隔一分钟可在下次启动重试，或进入**右上角设置 → 应用目录 → 刷新应用目录**立即获取更新。网络受限时仍可查看本机上次成功缓存的数据，首次安装离线时回退 APK 内置的清单。
 
 ## 新增应用：只提交一份 JSON
 
@@ -48,6 +48,6 @@ git push
 
 ## 当前收录
 
-新增 [Canta](https://github.com/samolego/Canta) 与 [Spotube](https://github.com/team-spotube/spotube)，连同既有条目共 **17 个应用**。Canta 需要 Shizuku 且误删系统组件有风险；Spotube 的官方 GitHub 仓库已迁移到 `team-spotube/spotube`，发行 APK 使用 `Spotube-android-all-arch.apk`。
+当前收录项目和数量以在线清单为准。
 
 [在线目录 JSON](../catalog/apps.json) · [提交目录修改](https://github.com/U0Axuan/android-china-setup/edit/main/catalog/apps.json)

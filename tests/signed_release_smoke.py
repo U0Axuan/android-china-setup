@@ -83,7 +83,7 @@ try:
     previous = Path("dist/previous.apk")
     if previous.exists():
         res = adb("install", "-r", str(previous), timeout=150)
-        check("Previous v0.7.1 installs", "Success" in res.stdout)
+        check("Previous release installs", "Success" in res.stdout)
         adb("shell", "am", "start", "-n", PACKAGE+"/.MainActivity")
         time.sleep(3)
         adb("shell", "am", "force-stop", PACKAGE)
@@ -91,7 +91,8 @@ try:
     check("Signed APK installed","Success" in res.stdout,res.stdout.strip())
     if previous.exists():
         package = adb("shell", "dumpsys", "package", PACKAGE).stdout
-        check("Upgrade installs version 0.7.2 without uninstall", "versionName=0.7.2" in package)
+        expected = os.environ.get("EXPECTED_VERSION", "0.7.2")
+        check("Upgrade installs " + expected, "versionName=" + expected in package)
     adb("logcat","-c")
     adb("shell","am","start","-n",PACKAGE+"/.MainActivity")
     root=None
@@ -103,7 +104,8 @@ try:
         adb("shell","am","start","-n",PACKAGE+"/.MainActivity",check=False)
     check("Non-debuggable signed app launches",root is not None and
           bool(elements(root,"精选 Android 开源应用")))
-    check("23 catalog projects shown",bool(elements(root,"23 个项目")))
+    counts = {len(json.loads(Path(p).read_text())) for p in ("catalog/apps.json", "app/src/main/assets/apps.json")}
+    check("Catalog count shown", any(elements(root, f"{n} 个项目") for n in counts))
     check("Settings accessible from top right",bool(elements(root,"设置")))
     check("No old bottom navigation",not elements(root,"测速") and
           not elements(root,"关于"))
@@ -172,7 +174,19 @@ try:
     tap(find("返回设置"))
     tap(find("返回应用列表"))
     tap(find("Material Files"))
-    tap(find("下载官方 APK"))
+    # A second tap at the same position must not schedule a second download.
+    button = bounds(find("下载官方 APK"))
+    x, y = str((button[0]+button[2])//2), str((button[1]+button[3])//2)
+    adb("shell", "settings", "put", "system", "accelerometer_rotation", "0")
+    adb("shell", "input", "tap", x, y)
+    adb("shell", "input", "tap", x, y)
+    adb("shell", "settings", "put", "system", "user_rotation", "1")
+    time.sleep(2)
+    adb("shell", "settings", "put", "system", "user_rotation", "0")
+    time.sleep(2)
+    adb("shell", "input", "keyevent", "KEYCODE_HOME")
+    adb("shell", "am", "start", "-n", PACKAGE+"/.MainActivity")
+
     # The status card is above the scrolled catalog; return to its top.
     for _ in range(12):
         adb("shell", "input", "swipe", "520", "650", "520", "1670", "180")

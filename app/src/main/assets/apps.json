@@ -52,6 +52,18 @@
     "preferredApkRegex": "^TagMacro-v[0-9.]+\\.apk$"
   },
   {
+    "name": "DSH Go",
+    "category": "日常与效率",
+    "summary": "DeepSeek Harness 安卓客户端，可在手机运行引擎，也可连接电脑或服务器。",
+    "readmeSnapshot": "第三方 DeepSeek Harness 客户端，内置 Linux 运行环境，无需 Root 或另装 Termux；支持本机引擎、SSH 远程连接、对话与工具审批。模型请求由用户配置的模型服务提供方处理，并非手机本地运行大模型。",
+    "homepage": "https://github.com/ccch1mneyyy/dsh-Go",
+    "readmeUrl": "https://github.com/ccch1mneyyy/dsh-Go#readme",
+    "repository": "ccch1mneyyy/dsh-Go",
+    "logoPath": "app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png",
+    "risk": "caution",
+    "notice": "Android 8.0+；当前官方主发行包为 ARM64，x86_64 请到原项目选择对应版本，不提供 32 位 ARM 构建。首次本机部署需下载运行环境。手机操控需无障碍等权限；不打扰模式需 Android 14+ 及 Shizuku 或自连 ADB，请按需授权。"
+  },
+  {
     "name": "BiliPai",
     "category": "游戏与影音",
     "summary": "面向 Bilibili 的第三方视频客户端。",

@@ -21,7 +21,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import java.io.File
+import io.github.u0axuan.androidchinasetup.DownloadTask.downloadBusy
+import io.github.u0axuan.androidchinasetup.DownloadTask.downloadPercent
+import io.github.u0axuan.androidchinasetup.DownloadTask.downloadText
+import io.github.u0axuan.androidchinasetup.DownloadTask.downloadedFile
+import io.github.u0axuan.androidchinasetup.DownloadTask.updateDownload
 
 class MainActivity : ComponentActivity() {
     private fun openWebsite(url: String) {
@@ -78,12 +82,6 @@ class MainActivity : ComponentActivity() {
         var settingsOpen by rememberSaveable { mutableStateOf(false) }
         var downloadSettingsOpen by rememberSaveable { mutableStateOf(false) }
         var detail by remember { mutableStateOf<CatalogApp?>(null) }
-        var downloadBusy by remember { mutableStateOf(false) }
-        var downloadPercent by remember { mutableIntStateOf(0) }
-        var downloadText by remember { mutableStateOf("") }
-        var downloadedFile by remember { mutableStateOf<File?>(null) }
-        var updateDownload by remember { mutableStateOf(false) }
-
         var sourceId by remember {
             mutableStateOf(prefs.getString("sourceId", DownloadSources.AUTO) ?: DownloadSources.AUTO)
         }
@@ -136,50 +134,10 @@ class MainActivity : ComponentActivity() {
             val repository = if (updating) SelfUpdater.REPOSITORY
                              else app?.repository.orEmpty()
             if (repository.isBlank()) return
-            downloadBusy = true
-            downloadPercent = 0
-            downloadText = "正在获取官方发布信息…"
-            downloadedFile = null
-            updateDownload = updating
-            val options = network()
-            val chosen = sources()
-            val preferred = if (updating) "" else app?.preferredApkRegex.orEmpty()
             detail = null
             if (updating) settingsOpen = true
-            Thread {
-                try {
-                    val asset = downloader.findLatestApk(repository, options, preferred)
-                    runOnUiThread { downloadText = DownloadSources.explain(asset, chosen) }
-                    var previous = -1
-                    val file = downloader.download(asset, options, chosen,
-                        { value ->
-                            if (value != previous) {
-                                previous = value
-                                runOnUiThread { downloadPercent = value }
-                            }
-                        },
-                        { text -> runOnUiThread { downloadText = text } }
-                    )
-                    if (updating && !SelfUpdater.matchingSigner(this, file)) {
-                        file.delete()
-                        runOnUiThread {
-                            downloadText = "更新包签名与当前安装版本不一致，已拒绝覆盖安装。"
-                            downloadBusy = false
-                        }
-                    } else {
-                        runOnUiThread {
-                            downloadedFile = file
-                            downloadText = "APK 下载完成，等待 Android 系统安装确认"
-                            downloadBusy = false
-                        }
-                    }
-                } catch (e: Exception) {
-                    runOnUiThread {
-                        downloadText = "下载失败：" + (e.message ?: "网络不可用")
-                        downloadBusy = false
-                    }
-                }
-            }.start()
+            DownloadTask.start(applicationContext, repository, app?.preferredApkRegex.orEmpty(),
+                updating, network(), sources())
         }
 
         fun installDownloaded() {

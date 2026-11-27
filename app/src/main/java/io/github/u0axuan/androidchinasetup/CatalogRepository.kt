@@ -27,7 +27,7 @@ object CatalogRepository {
         "https://api.github.com/repos/U0Axuan/android-china-setup/contents/catalog/apps.json?ref=main"
     private const val PREFS = "catalog-update"
     private const val LAST_ATTEMPT = "last_attempt"
-    private const val LAST_DAY = "last_attempt_day"
+    private const val LAST_DAY = "last_success_day"
     private const val MAX_HTTP_BYTES = 384 * 1024
     private const val CACHE_NAME = "catalog-cache.json"
 
@@ -36,8 +36,11 @@ object CatalogRepository {
             .getLong(LAST_ATTEMPT, 0L)
         val today = LocalDate.now(ZoneId.systemDefault()).toString()
         val lastDay = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(LAST_DAY, null)
-        return lastDay != today
+        return refreshDue(lastDay, today, previous, System.currentTimeMillis())
     }
+
+    internal fun refreshDue(successDay: String?, today: String, attempt: Long, now: Long): Boolean =
+        successDay != today && (attempt == 0L || now - attempt !in 0L until 60_000L)
 
     /** Read last validated data, or the APK-bundled catalog when offline. */
     fun load(context: Context, bundled: List<CatalogApp>): List<CatalogApp> {
@@ -52,7 +55,7 @@ object CatalogRepository {
     fun refresh(context: Context, options: NetworkOptions): CatalogRefreshResult {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             .edit().putLong(LAST_ATTEMPT, System.currentTimeMillis())
-            .putString(LAST_DAY, LocalDate.now(ZoneId.systemDefault()).toString()).apply()
+            .apply()
         val failures = mutableListOf<String>()
         for (endpoint in listOf(RAW_URL, API_URL)) {
             try {
@@ -67,6 +70,8 @@ object CatalogRepository {
                     cache.failWrite(stream)
                     throw e
                 }
+                context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+                    .putString(LAST_DAY, LocalDate.now(ZoneId.systemDefault()).toString()).apply()
                 return CatalogRefreshResult(apps, "已同步 ${apps.size} 个项目 · 无需升级 APK")
             } catch (e: Exception) {
                 failures += e.javaClass.simpleName
