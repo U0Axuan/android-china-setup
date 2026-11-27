@@ -247,6 +247,10 @@ try:
             root = dump(f"06_settings_{cycle}_{attempt}")
             if matches(root, "进入下载与测速"):
                 break
+            sheet = matches(root, "Close sheet", True)
+            if sheet:
+                tap(sheet[0])
+                continue
             button = matches(root, "设置", True)
             if button and matches(root, "Android China Setup"):
                 tap(button[-1])
