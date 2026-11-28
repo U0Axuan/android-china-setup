@@ -49,9 +49,11 @@ class ApkDownloader(private val context: Context) {
         val api = "https://api.github.com/repos/" + repository + "/releases/latest"
         val conn = connection(api, options)
         try {
-            require(conn.responseCode == 200) { "无法获取项目发布信息：HTTP " + conn.responseCode }
-            val json = JSONObject(conn.inputStream.bufferedReader().use { it.readText() })
-            val assets = json.getJSONArray("assets")
+            val assets = when (val status = conn.responseCode) {
+                200 -> JSONObject(conn.inputStream.bufferedReader().use { it.readText() }).getJSONArray("assets")
+                403, 429 -> webReleaseAssets(repository, options)
+                else -> error("无法获取项目发布信息：HTTP $status")
+            }
             val candidates = mutableListOf<JSONObject>()
             for (i in 0 until assets.length()) {
                 val asset = assets.getJSONObject(i)
@@ -76,6 +78,28 @@ class ApkDownloader(private val context: Context) {
             val digest = chosen.optString("digest").takeIf { it.startsWith("sha256:") }?.removePrefix("sha256:")
             return ReleaseAsset(download, chosen.getString("name"), digest)
         } finally { conn.disconnect() }
+    }
+
+    // The public release page carries the same asset links and SHA-256 digests as the API.
+    private fun webReleaseAssets(repo: String, options: NetworkOptions): org.json.JSONArray {
+        val base = "https://github.com/$repo/releases"
+        val latest = connection("$base/latest", options)
+        val tag = try {
+            latest.instanceFollowRedirects = false
+            latest.setRequestProperty("Accept", "text/html")
+            require(latest.responseCode in 300..399) { "无法确定官方发布版本" }
+            val target = URL(URL("$base/latest"), latest.getHeaderField("Location")).toString()
+            require(target.startsWith("$base/tag/")) { "发布版本链接无效" }
+            target.removePrefix("$base/tag/")
+        } finally { latest.disconnect() }
+        val listing = connection("$base/expanded_assets/$tag", options)
+        try {
+            listing.instanceFollowRedirects = false
+            listing.setRequestProperty("Accept", "text/html")
+            require(listing.responseCode == 200) { "官方发布文件列表无法读取" }
+            val page = listing.inputStream.use { org.jsoup.Jsoup.parse(it, "UTF-8", base) }
+            return ReleasePage.assets(page, repo, tag)
+        } finally { listing.disconnect() }
     }
 
     /**

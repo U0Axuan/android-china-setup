@@ -8,9 +8,9 @@
 
 **[下载正式版 APK](https://github.com/U0Axuan/android-china-setup/releases/latest/download/Android-China-Setup.apk)** · [发布记录](https://github.com/U0Axuan/android-china-setup/releases) · [反馈 / 推荐项目](https://github.com/U0Axuan/android-china-setup/issues/new?template=app-recommendation.yml)
 
-> **v0.7.3** 会在下载前检查安装包架构。目录每天首次启动时更新，同步失败后再次启动可重试。下载过程中旋转屏幕或返回应用可继续查看进度。
+> **v0.7.4** 首次阅读优先展示上游中文 README。多语言项目可以在详情页切换译本，已读内容可离线查看。
 
-[本次修复说明](docs/RELEASE_NOTES_v0.7.3.md) · [发布记录](https://github.com/U0Axuan/android-china-setup/releases)
+[本次修复说明](docs/RELEASE_NOTES_v0.7.4.md) · [发布记录](https://github.com/U0Axuan/android-china-setup/releases)
 
 
 ## 功能

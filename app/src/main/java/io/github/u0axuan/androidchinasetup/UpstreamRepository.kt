@@ -1,7 +1,6 @@
 package io.github.u0axuan.androidchinasetup
 
 import android.content.Context
-import android.util.Base64
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
@@ -72,7 +71,7 @@ class UpstreamRepository(private val context: Context) {
     }
 
     /** Called on a worker, not from a Compose composition or scrolling callback. */
-    fun update(repo: String, logoPath: String = "", includeReadme: Boolean = false): UpstreamInfo {
+    fun update(repo: String, logoPath: String = ""): UpstreamInfo {
         if (!Regex("""^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$""").matches(repo)) return UpstreamInfo()
         val old = cached(repo, logoPath)
         val meta = runCatching { getJson("https://api.github.com/repos/$repo") }.getOrNull()
@@ -81,21 +80,10 @@ class UpstreamRepository(private val context: Context) {
             it.matches(Regex("""[A-Za-z0-9_./-]+""")) && !it.contains("..")
         } ?: "main"
 
-        var readme = old.readme
-        if (includeReadme || readme.isBlank()) {
-            val result = runCatching { getJson("https://api.github.com/repos/$repo/readme") }.getOrNull()
-            if (result?.optString("encoding") == "base64") {
-                val markdown = runCatching {
-                    String(Base64.decode(result.getString("content"), Base64.DEFAULT), Charsets.UTF_8)
-                        .take(48000)
-                }.getOrDefault("")
-                if (markdown.isNotBlank()) readme = markdown
-            }
-        }
         val logo = if (logoPath.isBlank()) "" else old.logo.ifBlank {
             verifyCuratedIcon(repo, branch, logoPath)
         }
-        val info = UpstreamInfo(meta.optInt("stargazers_count").takeIf { it >= 0 }, logo, readme, logoPath)
+        val info = UpstreamInfo(meta.optInt("stargazers_count").takeIf { it >= 0 }, logo, old.readme, logoPath)
         synchronized(lock) {
             prefs.edit().putString(key(repo), JSONObject()
                 .put("stars", info.stars ?: -1)

@@ -1,6 +1,15 @@
 package io.github.u0axuan.androidchinasetup
 
 import android.os.Build
+import android.net.Uri
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import coil.compose.AsyncImage
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -59,7 +68,7 @@ fun AndroidChinaTheme(content: @Composable () -> Unit) {
 fun CatalogHome(
     apps: List<CatalogApp>, busy: Boolean, status: String, percent: Int,
     ready: Boolean, metadata: Map<String, UpstreamInfo>, onInstall: () -> Unit,
-    onDetails: (CatalogApp) -> Unit, onDownload: (CatalogApp) -> Unit
+    onVisible: (CatalogApp) -> Unit, onDetails: (CatalogApp) -> Unit, onDownload: (CatalogApp) -> Unit
 ) {
     val groups = remember(apps) { Catalog.grouped(apps) }
     LazyColumn(
@@ -112,6 +121,7 @@ fun CatalogHome(
                 }
             }
             items(entries, key = { it.name }, contentType = { "app" }) { app ->
+                LaunchedEffect(app.repository, app.logoPath) { onVisible(app) }
                 CatalogRow(app, busy, metadata[app.repository], onDetails, onDownload)
             }
         }
@@ -183,7 +193,43 @@ fun CatalogDetail(
     onDismiss: () -> Unit, onDownload: (CatalogApp) -> Unit,
     openUrl: (String) -> Unit
 ) {
-    val parts = remember(upstream?.readme) { ReadmeDocument.parse(upstream?.readme.orEmpty()) }
+    val context = LocalContext.current.applicationContext
+    val repo = remember(app.repository, app.readmeUrl) {
+        app.repository.ifBlank {
+            val uri = Uri.parse(app.readmeUrl)
+            if (uri.host == "github.com") uri.pathSegments.take(2).joinToString("/") else ""
+        }
+    }
+    val reader = remember(repo) { ReadmeReader(context, repo) }
+    var index by remember(reader) { mutableStateOf(reader.cachedIndex()) }
+    var choice by rememberSaveable(repo) { mutableStateOf(reader.choice()) }
+    var retry by remember(reader) { mutableStateOf(0) }
+    var discoveryFailed by remember(reader) { mutableStateOf(false) }
+    LaunchedEffect(reader, retry) {
+        if (repo.isNotBlank()) {
+            discoveryFailed = false
+            val result = withContext(Dispatchers.IO) { runCatching { reader.discover() } }
+            result.onSuccess { index = it }.onFailure { discoveryFailed = true }
+        }
+    }
+    val current = index
+    val path = current?.let { choice?.takeIf(it.paths::contains) ?: ReadmeLanguages.preferred(it.paths, it.original, it.originalTag) }
+    var body by remember(reader, path) { mutableStateOf(path?.let(reader::cached).orEmpty()) }
+    var failed by remember(reader, path) { mutableStateOf(false) }
+    var loading by remember(reader, path) { mutableStateOf(false) }
+    LaunchedEffect(reader, current, path, retry) {
+        if (current != null && path != null) {
+            loading = true
+            failed = false
+            val result = withContext(Dispatchers.IO) { runCatching { reader.read(current, path) } }
+            result.onSuccess { body = it }.onFailure { failed = true }
+            loading = false
+        }
+    }
+    val markdown = if (body.isNotBlank()) body else if (path == current?.original) upstream?.readme.orEmpty() else ""
+    val parts = remember(markdown) { ReadmeDocument.parse(markdown) }
+    val fullUrl = if (path == null || current == null) app.readmeUrl else
+        "https://github.com/$repo/blob/${Uri.encode(current.ref, "/")}/${Uri.encode(path, "/")}"
     val maxHeight = (LocalConfiguration.current.screenHeightDp * 0.88f).dp
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
@@ -219,7 +265,7 @@ fun CatalogDetail(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error)
                     }
-                    OutlinedButton(onClick = { openUrl(app.readmeUrl) },
+                    OutlinedButton(onClick = { openUrl(fullUrl) },
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                         Text("阅读原项目 README 全文")
                     }
@@ -230,6 +276,14 @@ fun CatalogDetail(
                     HorizontalDivider()
                     Text(if (parts.isEmpty()) "README 快照" else "原作者 README",
                         style = MaterialTheme.typography.titleMedium)
+                    if (current != null && path != null && current.paths.size > 1) {
+                        ReadmeLanguagePicker(current, path) { choice = it; reader.select(it) }
+                    }
+                    if (loading && body.isBlank()) LinearProgressIndicator(Modifier.fillMaxWidth())
+                    if (discoveryFailed && current == null) TextButton(onClick = { retry++ }) { Text("获取 README 语言列表 · 重试") }
+                    if (failed) TextButton(onClick = { retry++ }) {
+                        Text(if (body.isBlank()) "此语言暂时无法加载 · 重试" else "正在显示缓存 · 重新获取")
+                    }
                     Text(if (parts.isEmpty()) "离线摘要" else "原文已排版 · 已省略网页徽章与图片",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -254,12 +308,45 @@ fun CatalogDetail(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ReadmeLanguagePicker(index: ReadmeIndex, active: String, choose: (String) -> Unit) {
+    val paths = index.paths
+    fun label(path: String) = ReadmeLanguages.label(path, index.originalTag.takeIf { path == index.original })
+    var expanded by remember { mutableStateOf(false) }
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val fontScale = androidx.compose.ui.platform.LocalDensity.current.fontScale
+        if (paths.size <= 3 && maxWidth >= (paths.size * 108 * fontScale).dp) {
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                paths.forEachIndexed { index, path ->
+                    SegmentedButton(selected = path == active, onClick = { choose(path) },
+                        shape = SegmentedButtonDefaults.itemShape(index, paths.size),
+                        modifier = Modifier.heightIn(min = 48.dp)) { Text(label(path)) }
+                }
+            }
+        } else {
+            OutlinedButton(onClick = { expanded = true }, modifier = Modifier.heightIn(min = 48.dp)) {
+                Text("README 语言 · " + label(active))
+            }
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                paths.forEach { path ->
+                    DropdownMenuItem(text = { Text(label(path)) },
+                        modifier = Modifier.semantics { selected = path == active },
+                        trailingIcon = { if (path == active) Text("✓") },
+                        onClick = { expanded = false; choose(path) })
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun ReadmePartItem(part: ReadmePart) {
     when (part.type) {
         ReadmePart.Type.HEADING -> {
             val typography = MaterialTheme.typography
             Text(part.text,
+                modifier = Modifier.semantics { heading() },
                 style = when (part.depth) {
                     1 -> typography.titleLarge
                     2 -> typography.titleMedium
