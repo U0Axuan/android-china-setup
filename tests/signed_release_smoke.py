@@ -74,7 +74,8 @@ def find(label, attempts=16):
         found = elements(root, label)
         if found:
             return found[0]
-        adb("shell", "input", "swipe", "520", "1670", "520", "650", "230")
+        # Slow, overlapping swipes keep every row on screen for at least one dump.
+        adb("shell", "input", "swipe", "520", "1450", "520", "850", "600")
     raise AssertionError("Cannot find " + label)
 
 try:
