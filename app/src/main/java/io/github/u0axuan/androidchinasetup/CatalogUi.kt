@@ -68,7 +68,7 @@ fun AndroidChinaTheme(content: @Composable () -> Unit) {
 fun CatalogHome(
     apps: List<CatalogApp>, busy: Boolean, status: String, percent: Int,
     ready: Boolean, metadata: Map<String, UpstreamInfo>, onInstall: () -> Unit,
-    onDetails: (CatalogApp) -> Unit, onDownload: (CatalogApp) -> Unit
+    onVisible: (CatalogApp) -> Unit, onDetails: (CatalogApp) -> Unit, onDownload: (CatalogApp) -> Unit
 ) {
     val groups = remember(apps) { Catalog.grouped(apps) }
     LazyColumn(
@@ -121,6 +121,7 @@ fun CatalogHome(
                 }
             }
             items(entries, key = { it.name }, contentType = { "app" }) { app ->
+                LaunchedEffect(app.repository, app.logoPath) { onVisible(app) }
                 CatalogRow(app, busy, metadata[app.repository], onDetails, onDownload)
             }
         }

@@ -358,23 +358,31 @@ try:
 
     click("返回应用列表")
     assert_check("Back returns to categories",bool(matches(dump("11_back"),"精选 Android 开源应用")))
-    daily_before = adb("shell", "run-as", PACKAGE, "cat", "shared_prefs/catalog-update.xml", check=False).stdout
-    adb("shell","am","force-stop",PACKAGE)
-    adb("shell","am","start","-n",PACKAGE+"/.MainActivity")
-    time.sleep(3)
-    daily_after = adb("shell", "run-as", PACKAGE, "cat", "shared_prefs/catalog-update.xml", check=False).stdout
-    before = ET.fromstring(daily_before)
-    after = ET.fromstring(daily_after)
-    success = before.find("./string[@name='last_success_day']")
-    if success is not None and success.text == adb("shell", "date", "+%F").stdout.strip():
-        assert_check("Same-day successful refresh is not repeated", daily_before == daily_after)
+    # Wait for the activity and its startup coroutine before reading persisted state.
+    def catalog_state():
+        xml = adb("shell", "run-as", PACKAGE, "cat", "shared_prefs/catalog-update.xml").stdout
+        return {n.get("name"): n.get("value", n.text) for n in ET.fromstring(xml)}
+    before = catalog_state()
+    today = adb("shell", "date", "+%Y-%m-%d").stdout.strip()
+    prior = int(before["last_attempt"])
+    now = int(adb("shell", "date", "+%s").stdout.strip()) * 1000
+    adb("shell", "am", "force-stop", PACKAGE)
+    adb("shell", "am", "start", "-W", "-n", PACKAGE + "/.MainActivity")
+    assert_check("Relaunch after preferences", find("精选 Android 开源应用", True) is not None)
+    after = catalog_state()
+    if before.get("last_success_day") == today:
+        assert_check("Same-day successful refresh is not repeated", before == after, (before, after))
+    elif now - prior >= 60_000:
+        deadline = time.monotonic() + 20
+        while after["last_attempt"] == before["last_attempt"] and time.monotonic() < deadline:
+            time.sleep(0.5)
+            after = catalog_state()
+        assert_check("Eligible failed refresh retried", int(after["last_attempt"]) - prior >= 60_000,
+                     (before, after, today, now))
     else:
-        prior = int(before.find("./long[@name='last_attempt']").get("value"))
-        latest = int(after.find("./long[@name='last_attempt']").get("value"))
-        now = int(adb("shell", "date", "+%s").stdout.strip()) * 1000
-        assert_check("Failed refresh observes retry cooldown",
-                     latest - prior >= 60_000 or (latest == prior and now - prior < 65_000))
-    assert_check("Relaunch after preferences",bool(matches(dump("12_restart"),"Android China Setup")))
+        elapsed = int(after["last_attempt"]) - prior
+        assert_check("Failed refresh observes retry cooldown", elapsed == 0 or elapsed >= 60_000,
+                     (before, after))
     assert_check("Custom source survives restart",any(value == "https://mirror.example.com" for value in custom_prefixes()))
     shot("12_relaunch")
     # Delete the selected custom mirror and verify the automatic fallback.
