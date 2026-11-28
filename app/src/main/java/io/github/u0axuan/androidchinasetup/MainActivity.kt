@@ -60,8 +60,8 @@ class MainActivity : ComponentActivity() {
             .associate { it.repository to upstream.cached(it.repository, it.logoPath) }) }
         val metadataPending = remember { mutableSetOf<String>() }
         val metadataSemaphore = remember { java.util.concurrent.Semaphore(4) }
-        fun loadMetadata(repository: String, readme: Boolean = false, force: Boolean = false) {
-            if (repository.isBlank() || (!readme && !force && !upstream.isStale(repository))) return
+        fun loadMetadata(repository: String, force: Boolean = false) {
+            if (repository.isBlank() || (!force && !upstream.isStale(repository))) return
             synchronized(metadataPending) {
                 if (!metadataPending.add(repository)) return
             }
@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
                 metadataSemaphore.acquireUninterruptibly()
                 try {
                     val verifiedPath = apps.firstOrNull { it.repository == repository }?.logoPath.orEmpty()
-                    val result = upstream.update(repository, verifiedPath, readme)
+                    val result = upstream.update(repository, verifiedPath)
                     runOnUiThread { metadata = metadata + (repository to result) }
                 } finally {
                     metadataSemaphore.release()
@@ -81,7 +81,8 @@ class MainActivity : ComponentActivity() {
         val benchmark = remember { SourceBenchmarker() }
         var settingsOpen by rememberSaveable { mutableStateOf(false) }
         var downloadSettingsOpen by rememberSaveable { mutableStateOf(false) }
-        var detail by remember { mutableStateOf<CatalogApp?>(null) }
+        var detailName by rememberSaveable { mutableStateOf<String?>(null) }
+        val detail = apps.firstOrNull { it.name == detailName }
         var sourceId by remember {
             mutableStateOf(prefs.getString("sourceId", DownloadSources.AUTO) ?: DownloadSources.AUTO)
         }
@@ -134,7 +135,7 @@ class MainActivity : ComponentActivity() {
             val repository = if (updating) SelfUpdater.REPOSITORY
                              else app?.repository.orEmpty()
             if (repository.isBlank()) return
-            detail = null
+            detailName = null
             if (updating) settingsOpen = true
             DownloadTask.start(applicationContext, repository, app?.preferredApkRegex.orEmpty(),
                 updating, network(), sources())
@@ -253,11 +254,6 @@ class MainActivity : ComponentActivity() {
                     loadMetadata(it.repository, force = pathChanged)
             }
         }
-        LaunchedEffect(detail?.repository) {
-            detail?.repository?.takeIf { it.isNotBlank() }?.let { repository ->
-                if (metadata[repository]?.readme.isNullOrBlank()) loadMetadata(repository, true)
-            }
-        }
         BackHandler(settingsOpen) {
             if (downloadSettingsOpen) downloadSettingsOpen = false else settingsOpen = false
         }
@@ -310,7 +306,7 @@ class MainActivity : ComponentActivity() {
                         percent = downloadPercent,
                         ready = downloadedFile != null && !updateDownload,
                         onInstall = ::installDownloaded,
-                        onDetails = { detail = it },
+                        onDetails = { detailName = it.name },
                         onDownload = { startDownload(it, false) }
                     )
                 } else {
@@ -362,7 +358,7 @@ class MainActivity : ComponentActivity() {
                 if (app != null && !settingsOpen) {
                     CatalogDetail(
                         app = app, busy = downloadBusy, upstream = metadata[app.repository],
-                        onDismiss = { detail = null },
+                        onDismiss = { detailName = null },
                         onDownload = { startDownload(it, false) },
                         openUrl = ::openWebsite
                     )

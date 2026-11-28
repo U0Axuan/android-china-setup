@@ -426,6 +426,38 @@ try:
     adb("shell", "wm", "size", "reset")
     adb("shell", "settings", "put", "system", "font_scale", "1.0")
     adb("shell", "cmd", "uimode", "night", "no")
+    # Exercise both translations with deterministic, offline cached documents.
+    adb("shell", "am", "force-stop", PACKAGE)
+    prefix = "ximeiorg/Xime/"
+    paths = ["README.md", "README.zh-CN.md"]
+    prefs = ET.Element("map")
+    stamp = str(int(time.time() * 1000))
+    def fixture(name, value):
+        ET.SubElement(prefs, "string", name=prefix + name).text = value
+        ET.SubElement(prefs, "long", name=prefix + name + ":time", value=stamp)
+    fixture(":index", json.dumps(dict(original=paths[0], paths=paths, ref="main", originalTag="en")))
+    ET.SubElement(prefs, "long", name=prefix + ":time", value=stamp)
+    fixture(paths[0], "# English fixture")
+    fixture(paths[1], "# 中文阅读测试")
+    subprocess.run(["adb", "shell", "run-as", PACKAGE, "tee", "shared_prefs/readme-languages-v1.xml"],
+                   input=ET.tostring(prefs, encoding="utf-8"), stdout=subprocess.DEVNULL, check=True)
+    adb("shell", "svc", "wifi", "disable")
+    adb("shell", "svc", "data", "disable")
+    try:
+        adb("shell", "am", "start", "-n", PACKAGE + "/.MainActivity")
+        click("曦码输入法")
+        assert_check("Chinese README is the initial document", find("中文阅读测试", True) is not None)
+        if matches(dump(), "README 语言"):
+            click("README 语言")
+        click("英语", True)
+        assert_check("Language selection changes the document", find("English fixture", True) is not None)
+        adb("shell", "am", "force-stop", PACKAGE)
+        adb("shell", "am", "start", "-n", PACKAGE + "/.MainActivity")
+        click("曦码输入法")
+        assert_check("Offline restart retains selected document", find("English fixture", True) is not None)
+    finally:
+        adb("shell", "svc", "wifi", "enable")
+        adb("shell", "svc", "data", "enable")
     assert_check("No app fatal exception", not re.search(
         r"FATAL EXCEPTION[^\n]*\n[^\n]*Process: " + re.escape(PACKAGE),
         adb("logcat", "-d", "-v", "brief").stdout))
