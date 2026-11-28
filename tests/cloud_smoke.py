@@ -451,17 +451,27 @@ try:
                    input=ET.tostring(prefs, encoding="utf-8"), stdout=subprocess.DEVNULL, check=True)
     adb("shell", "svc", "wifi", "disable")
     adb("shell", "svc", "data", "disable")
+    def launch_fixture_detail():
+        adb("shell", "am", "start", "-W", "-n", PACKAGE + "/.MainActivity")
+        for attempt in range(6):
+            root = dump("fixture-open-" + str(attempt))
+            if matches(root, "阅读原项目 README 全文"):
+                return
+            if matches(root, "精选 Android 开源应用"):
+                click("曦码输入法", True)
+            else:
+                time.sleep(1)
+        raise AssertionError("Fixture project detail did not open")
+
     try:
-        adb("shell", "am", "start", "-n", PACKAGE + "/.MainActivity")
-        click("曦码输入法")
+        launch_fixture_detail()
         assert_check("Chinese README is the initial document", find("中文阅读测试", True) is not None)
         if matches(dump(), "README 语言"):
             click("README 语言")
         click("英语", True)
         assert_check("Language selection changes the document", find("English fixture", True) is not None)
         adb("shell", "am", "force-stop", PACKAGE)
-        adb("shell", "am", "start", "-n", PACKAGE + "/.MainActivity")
-        click("曦码输入法")
+        launch_fixture_detail()
         assert_check("Offline restart retains selected document", find("English fixture", True) is not None)
     finally:
         adb("shell", "svc", "wifi", "enable")
